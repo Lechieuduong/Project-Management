@@ -5,15 +5,16 @@ import { RegisterDto } from './dto/register.dto';
 import { UsersRepository } from './users.repository';
 import * as bcrypt from 'bcrypt'
 import * as moment from 'moment';
+import * as fs from 'fs';
 import { v4 as uuid } from 'uuid'
 import { SendMailService } from 'src/common/send-mail/send-mail.service';
-import { STATUS_CODES } from 'http';
 import { UserEntity } from './entity/user.entity';
 import { apiResponse } from 'src/common/api-response/apiresponse';
 import { VerifyUserDto } from './dto/verify-user.dto';
 import { UserMesssage } from './users.constants';
 import { ForgotPasswordDto } from './dto/forgot-password.dto';
 import { ChangePasswordDto } from './dto/change-password.dto';
+import { ChangeProfileDto } from './dto/change-profile.dto';
 
 @Injectable()
 export class UsersService {
@@ -99,11 +100,6 @@ export class UsersService {
         await user.save();
 
         return apiResponse(HttpStatus.OK, res.response, {})
-        // {
-        //     statuscode: 200,
-        //     MessageChannel: res.response,
-        //     data: {}
-        // }
     }
 
     async verifyUser(verifyUserDto: VerifyUserDto) {
@@ -239,8 +235,36 @@ export class UsersService {
 
         user.updated_at = new Date();
 
-        await user.save()
+        await user.save();
 
-        return apiResponse(HttpStatus.OK, res.response, {})
+        return apiResponse(HttpStatus.OK, res.response, {});
+    }
+
+    async changeProfile(
+        changeProfileDto: ChangeProfileDto,
+        userData: UserEntity,
+        file: Express.Multer.File,
+    ) {
+        const { email, name } = changeProfileDto;
+        const path = file.path;
+        if (file) {
+            if 
+        }
+
+        if (email) {
+            const checkUser = await this.userRepository.findOne({ email });
+
+            if (checkUser)
+                throw new ConflictException(`Email: ${email} is already exists.`);
+
+            userData.email = email;
+        }
+
+        if (name)
+            userData.name = name;
+
+        await this.userRepository.save({ ...userData, ...changeProfileDto });
+
+        return apiResponse(HttpStatus.OK, 'Change profile successful', {})
     }
 }
