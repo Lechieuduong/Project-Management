@@ -1,8 +1,13 @@
-import { Body, Controller, Get, Patch, Post, Query, UseGuards } from '@nestjs/common';
+import { Body, Controller, Get, HttpCode, Patch, Post, Query, UploadedFile, UseGuards, UseInterceptors } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
-import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
+import { FileInterceptor } from '@nestjs/platform-express';
+import { ApiBearerAuth, ApiBody, ApiConsumes, ApiTags } from '@nestjs/swagger';
+import { diskStorage } from 'multer';
+import { extname } from 'path';
 import { GetUser } from 'src/auth/decorators/get-user.decorator';
 import { ChangePasswordDto } from './dto/change-password.dto';
+import { ChangeProfileDto } from './dto/change-profile.dto';
+import { ChangeRoleDto } from './dto/change-role.dto';
 import { ForgotPasswordDto } from './dto/forgot-password.dto';
 import { RegisterDto } from './dto/register.dto';
 import { VerifyUserDto } from './dto/verify-user.dto';
@@ -52,5 +57,50 @@ export class UsersController {
         @GetUser() user: UserEntity
     ) {
         return this.userService.changePassword(changePasswordDto, user);
+    }
+
+    @Patch('/update_profile')
+    @ApiConsumes('multipart/form-data')
+    // @ApiBody({
+    //     schema: {
+    //         type: 'object',
+    //         properties: {
+    //             comment: { type: 'string' },
+    //             outletId: { type: 'integer' },
+    //             file: {
+    //                 type: 'string',
+    //                 format: 'binary',
+    //             },
+    //         },
+    //     },
+    // })
+    @ApiBearerAuth()
+    @UseGuards(AuthGuard())
+    @UseInterceptors(
+        FileInterceptor('avatar', {
+            storage: diskStorage({
+                destination: './upload/avatar-img',
+                filename: (req, file, cb) => {
+                    const randomName = Array(32)
+                        .fill(null)
+                        .map(() => Math.round(Math.random() * 16).toString(16)).join('');
+                    cb(null, `${randomName}${extname(file.originalname)}`);
+                }
+            })
+        })
+    ) changeProfile(
+        @Body() changeProfileDto: ChangeProfileDto,
+        @GetUser() user: UserEntity,
+        @UploadedFile() file: Express.Multer.File,
+    ) {
+        return this.userService.changeProfile(changeProfileDto, user, file);
+    }
+
+    @Patch('/change_role')
+    @ApiBearerAuth()
+    @UseGuards(AuthGuard())
+    @HttpCode(200)
+    changeRoleUser(@Body() changeRoleDto: ChangeRoleDto) {
+        return this.userService.changeRoleUSer(changeRoleDto)
     }
 }

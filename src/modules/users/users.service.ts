@@ -15,6 +15,7 @@ import { UserMesssage } from './users.constants';
 import { ForgotPasswordDto } from './dto/forgot-password.dto';
 import { ChangePasswordDto } from './dto/change-password.dto';
 import { ChangeProfileDto } from './dto/change-profile.dto';
+import { ChangeRoleDto } from './dto/change-role.dto';
 
 @Injectable()
 export class UsersService {
@@ -60,7 +61,6 @@ export class UsersService {
             return apiResponse(HttpStatus.OK, 'Create user successfully. Please check your email to verify user.', {})
 
         } catch (error) {
-            console.log(error);
 
             if (error.code === '23505') {
                 throw new ConflictException(UserMesssage.EMAIL_EXIST);
@@ -245,26 +245,42 @@ export class UsersService {
         userData: UserEntity,
         file: Express.Multer.File,
     ) {
-        const { email, name } = changeProfileDto;
-        const path = file.path;
+        const checkUser = await this.userRepository.findOne({ email: userData.email });
+
+        if (!checkUser)
+            throw new NotFoundException(`User has email ${checkUser.email}is not found`);
+
         if (file) {
-            if 
+            if (fs.existsSync(checkUser.avatar)) {
+                fs.unlinkSync(`./${checkUser.avatar}`);
+            }
+            checkUser.avatar = file.path;
         }
 
-        if (email) {
-            const checkUser = await this.userRepository.findOne({ email });
-
-            if (checkUser)
-                throw new ConflictException(`Email: ${email} is already exists.`);
-
-            userData.email = email;
+        const { email, name } = changeProfileDto;
+        if (email !== null) {
+            checkUser.email = email;
+        }
+        if (name !== null) {
+            checkUser.name = name;
         }
 
-        if (name)
-            userData.name = name;
-
-        await this.userRepository.save({ ...userData, ...changeProfileDto });
+        await this.userRepository.save(checkUser);
 
         return apiResponse(HttpStatus.OK, 'Change profile successful', {})
+    }
+
+    async changeRoleUSer(changeRoleDto: ChangeRoleDto) {
+        const { email, role } = changeRoleDto;
+
+        const user = await this.userRepository.findOne({ email });
+
+        if (!user)
+            throw new NotFoundException(`User email: ${email} is not found.`);
+
+        user.role = role;
+        await user.save();
+
+        return apiResponse(HttpStatus.OK, 'Change role successfully', {});
     }
 }

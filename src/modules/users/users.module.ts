@@ -8,7 +8,7 @@ import { UsersRepository } from './users.repository';
 import { UsersService } from './users.service';
 import { jwtConfig } from 'src/configs/configs.constants';
 import { PassportModule } from '@nestjs/passport';
-
+import { ProjectEntity } from '../projects/entity/project.entity';
 const passportModule = PassportModule.register({ defaultStrategy: 'jwt' });
 
 @Module({
@@ -18,7 +18,7 @@ const passportModule = PassportModule.register({ defaultStrategy: 'jwt' });
       secret: jwtConfig.secret,
       signOptions: {
         expiresIn: jwtConfig.expiresIn,
-      }
+      } //, ProjectEntity
     }),
     TypeOrmModule.forFeature([UsersRepository, UserEntity])
   ],

@@ -3,6 +3,9 @@ import {
     Column,
     CreateDateColumn,
     Entity,
+    ManyToMany,
+    ManyToOne,
+    OneToMany,
     PrimaryGeneratedColumn,
     UpdateDateColumn
 } from "typeorm";
@@ -10,6 +13,7 @@ import * as bcrypt from 'bcrypt';
 import { Exclude } from "class-transformer";
 import { defaultNameLength } from "src/common/constants/common.constants";
 import { UsersRole } from "../users.constants";
+import { ProjectEntity } from "src/modules/projects/entity/project.entity";
 
 @Entity({ name: 'User' })
 export class UserEntity extends BaseEntity {
@@ -44,8 +48,12 @@ export class UserEntity extends BaseEntity {
     @UpdateDateColumn()
     updated_at: Date;
 
+    @ManyToMany((_type) => ProjectEntity, (projects) => projects.members, { eager: true })
+    project: ProjectEntity[];
+
     async validatePassword(passwword: string): Promise<boolean> {
         const hashedPassword = await bcrypt.compare(passwword, this.password);
         return hashedPassword;
     }
+
 }

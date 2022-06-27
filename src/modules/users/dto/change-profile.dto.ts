@@ -2,12 +2,16 @@ import { ApiProperty } from "@nestjs/swagger";
 import { IsEmail, IsOptional, MaxLength, MinLength } from "class-validator";
 
 export class ChangeProfileDto {
-    @ApiProperty()
+    @ApiProperty({ required: false })
     @IsOptional()
-    name: string;
+    name?: string;
 
-    @ApiProperty()
+    @ApiProperty({ required: false })
     @IsOptional()
     @IsEmail()
-    email: string;
+    email?: string;
+
+    @IsOptional()
+    @ApiProperty({ type: 'string', format: 'binary', required: false })
+    avatar?: Express.Multer.File;
 }
