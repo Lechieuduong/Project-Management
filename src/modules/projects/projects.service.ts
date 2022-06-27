@@ -1,7 +1,9 @@
 import { HttpStatus, Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
+import { GetUser } from 'src/auth/decorators/get-user.decorator';
 import { apiResponse } from 'src/common/api-response/apiresponse';
 import { Repository } from 'typeorm';
+import { UserEntity } from '../users/entity/user.entity';
 import { ChangeProjectStatusDto } from './dto/change-project-status.dto';
 import { CreateProjectDto } from './dto/create-project.dto';
 import { UpdateProjectDto } from './dto/update-project.dto';
@@ -15,8 +17,11 @@ export class ProjectsService {
         private readonly projectsRepository: ProjectsRepository
     ) { }
 
-    async createProject(createProjectDto: CreateProjectDto) {
-        return this.projectsRepository.createProject(createProjectDto);
+    async createProject(
+        createProjectDto: CreateProjectDto,
+        user: UserEntity
+    ) {
+        return this.projectsRepository.createProject(createProjectDto, user);
     }
 
     async getAllProjects() {

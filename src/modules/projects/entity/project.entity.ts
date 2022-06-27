@@ -35,7 +35,7 @@ export class ProjectEntity extends BaseEntity {
     @DeleteDateColumn()
     deleted_column?: Date;
 
-    @ManyToMany((_type) => UserEntity, (user) => user.project, { eager: false })
+    @ManyToOne((_type) => UserEntity, (user) => user.project, { eager: false })
     @Exclude({ toPlainOnly: true })
-    members: UserEntity[];
+    user: UserEntity;
 }

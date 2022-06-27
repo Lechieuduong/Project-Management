@@ -48,12 +48,18 @@ export class UserEntity extends BaseEntity {
     @UpdateDateColumn()
     updated_at: Date;
 
-    @ManyToMany((_type) => ProjectEntity, (projects) => projects.members, { eager: true })
+    @OneToMany((_type) => ProjectEntity, (projects) => projects.user, { eager: true })
     project: ProjectEntity[];
 
     async validatePassword(passwword: string): Promise<boolean> {
         const hashedPassword = await bcrypt.compare(passwword, this.password);
         return hashedPassword;
     }
-
+    /** 
+     * members: string[]
+     * {id, name, email, role} = user
+     * 
+     * const inviteUser = members.push(user)
+     * 
+    */
 }
