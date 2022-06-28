@@ -1,9 +1,10 @@
-import { HttpStatus, Injectable, NotFoundException } from '@nestjs/common';
+import { ConflictException, HttpStatus, Injectable, InternalServerErrorException, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { GetUser } from 'src/auth/decorators/get-user.decorator';
 import { apiResponse } from 'src/common/api-response/apiresponse';
 import { Repository } from 'typeorm';
 import { UserEntity } from '../users/entity/user.entity';
+import { AddMemberDto } from './dto/add-member.dto';
 import { ChangeProjectStatusDto } from './dto/change-project-status.dto';
 import { CreateProjectDto } from './dto/create-project.dto';
 import { UpdateProjectDto } from './dto/update-project.dto';
@@ -89,5 +90,27 @@ export class ProjectsService {
         }
 
         return apiResponse(HttpStatus.OK, 'Delete successful', {});
+    }
+
+    async addMembers(addMembersDto: AddMemberDto, id: string) {
+        const { email, role } = addMembersDto;
+        try {
+            const project = await this.projectsRepository.findOne(id);
+            const newArr = project.members || [];
+            newArr.push({ email, role });
+            project.members = newArr;
+            project.save();
+
+            return apiResponse(HttpStatus.OK, 'Add members successful', {})
+        } catch (error) {
+            if (error.code === '23505') {
+                throw new ConflictException(
+                    `This member already exists.`,
+                );
+            }
+
+            throw new InternalServerErrorException();
+
+        }
     }
 }

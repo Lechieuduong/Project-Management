@@ -7,5 +7,6 @@ export enum ProjectStatus {
     IN_PROGRESS = 'In Progress',
     READY_FOR_TEST = 'Ready For Test',
     DONE = 'Done',
-    CANCELLED = 'Cancelled'
+    CANCELLED = 'Cancelled',
+    BUG = 'Bug'
 }

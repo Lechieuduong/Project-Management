@@ -8,7 +8,7 @@ import { ProjectMessage } from "./projects.constants";
 
 @EntityRepository(ProjectEntity)
 export class ProjectsRepository extends Repository<ProjectEntity> {
-    async createProject(createProjectDto: CreateProjectDto, user: UserEntity) {
+    async createProject(createProjectDto: CreateProjectDto, user: UserEntity): Promise<ProjectEntity> {
         const { projectName, projectCode, startDate, endDate, costs } = createProjectDto;
 
         const newProject = this.create({
@@ -17,13 +17,13 @@ export class ProjectsRepository extends Repository<ProjectEntity> {
             startDate,
             endDate,
             costs,
-            user,
+            user
         })
 
         try {
             await this.save(newProject);
 
-            return apiResponse(HttpStatus.OK, 'Create project successfully', {});
+            return newProject;
         } catch (error) {
             if (error.code === '23505') {
                 throw new ConflictException(ProjectMessage.PROJECT_EXIST);
