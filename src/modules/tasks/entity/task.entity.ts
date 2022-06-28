@@ -2,6 +2,7 @@
 //import { ProjectEntity } from "src/modules/projects/entity/project.entity";
 import { ProjectStatus } from "src/modules/projects/projects.constants";
 import { BaseEntity, Column, CreateDateColumn, DeleteDateColumn, Entity, PrimaryGeneratedColumn, UpdateDateColumn } from "typeorm";
+import { TaskPriority } from "../tasks.constants";
 
 @Entity({ name: 'Task' })
 export class TaskEntity extends BaseEntity {
@@ -11,14 +12,14 @@ export class TaskEntity extends BaseEntity {
     @Column()
     title: string;
 
-    @Column()
+    @Column({ default: ProjectStatus.BUG })
     type: ProjectStatus
 
-    @Column()
+    @Column({ default: true })
     description: string;
 
-    @Column()
-    priority: string;
+    @Column({ default: TaskPriority.NONE })
+    priority: TaskPriority;
 
     // @Column()
     // asignees: UserEntity[]
@@ -29,10 +30,10 @@ export class TaskEntity extends BaseEntity {
     // @Column()
     // project: ProjectEntity
 
-    @Column()
+    @Column({ nullable: true })
     taskParent?: boolean
 
-    @Column()
+    @Column({ nullable: true })
     attachments?: string;
 
     @CreateDateColumn()
