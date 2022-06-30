@@ -7,15 +7,21 @@ import { UsersRole } from "src/modules/users/users.constants";
 export class RolesGuard implements CanActivate {
     constructor(private reflector: Reflector) { }
 
-    canActivate(context: ExecutionContext): boolean {
+    async canActivate(context: ExecutionContext): Promise<boolean> {
         const requireRoles = this.reflector.getAllAndOverride<UsersRole[]>(
             ROLES_KEY,
-            [context.getHandler(), context.getClass()],
+            [context.getHandler(),
+            context.getClass()],
         );
-        if (!requireRoles) {
+        if (!requireRoles)
             return true;
-        }
-        const { user } = context.switchToHttp().getRequest();
-        return requireRoles.includes(user.role);
+
+        const roleUser = context.switchToHttp().getRequest().user.role;
+
+        if (requireRoles.includes(roleUser))
+            return true;
+
+        return false
+
     }
 }

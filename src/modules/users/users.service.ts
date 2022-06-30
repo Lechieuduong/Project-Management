@@ -1,4 +1,4 @@
-import { BadRequestException, ConflictException, ForbiddenException, forwardRef, HttpStatus, Inject, Injectable, InternalServerErrorException, NotFoundException } from '@nestjs/common';
+import { BadRequestException, ConflictException, ForbiddenException, forwardRef, HttpStatus, Inject, Injectable, InternalServerErrorException, NotFoundException, UnauthorizedException } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { InjectRepository } from '@nestjs/typeorm';
 import { RegisterDto } from './dto/register.dto';
@@ -16,6 +16,7 @@ import { ForgotPasswordDto } from './dto/forgot-password.dto';
 import { ChangePasswordDto } from './dto/change-password.dto';
 import { ChangeProfileDto } from './dto/change-profile.dto';
 import { ChangeRoleDto } from './dto/change-role.dto';
+import IJwtPayload from 'src/auth/payloads/jwt-payloads';
 
 @Injectable()
 export class UsersService {
@@ -282,5 +283,19 @@ export class UsersService {
         await user.save();
 
         return apiResponse(HttpStatus.OK, 'Change role successfully', {});
+    }
+
+    async findUserByPayLoad(iJwtPayload: IJwtPayload): Promise<UserEntity> {
+        const { email, role } = iJwtPayload;
+        const user = await this.userRepository.findOne({ email, role });
+
+        if (!user)
+            throw new UnauthorizedException();
+
+        if (!user.verified)
+            throw new ForbiddenException(
+                'Please check your email to verify account.',
+            );
+        return user;
     }
 }

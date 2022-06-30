@@ -15,12 +15,14 @@ export class TaskEntity extends BaseEntity {
     @Column({ default: ProjectStatus.BUG })
     type: ProjectStatus
 
-    @Column({ default: true })
+    @Column({ nullable: true })
     description: string;
 
     @Column({ default: TaskPriority.NONE })
     priority: TaskPriority;
 
+    @Column()
+    image: string;
     // @Column()
     // asignees: UserEntity[]
 
@@ -33,8 +35,8 @@ export class TaskEntity extends BaseEntity {
     @Column({ nullable: true })
     taskParent?: boolean
 
-    @Column({ nullable: true })
-    attachments?: string;
+    @Column("text", { array: true, nullable: true })
+    attachments?: string[];
 
     @CreateDateColumn()
     created_at: Date;

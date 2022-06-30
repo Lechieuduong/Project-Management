@@ -1,8 +1,9 @@
 import { Exclude } from "class-transformer";
 import { UserEntity } from "src/modules/users/entity/user.entity";
 import { UsersRole } from "src/modules/users/users.constants";
-import { BaseEntity, Column, CreateDateColumn, DeleteDateColumn, Entity, ManyToMany, ManyToOne, PrimaryGeneratedColumn, UpdateDateColumn } from "typeorm";
+import { BaseEntity, Column, CreateDateColumn, DeleteDateColumn, Entity, ManyToMany, ManyToOne, OneToMany, PrimaryGeneratedColumn, UpdateDateColumn } from "typeorm";
 import { ProjectStatus } from "../projects.constants";
+import { ProjectInviteMember } from "./project-invite-member.entity";
 
 @Entity({ name: 'Project' })
 export class ProjectEntity extends BaseEntity {
@@ -36,15 +37,10 @@ export class ProjectEntity extends BaseEntity {
     @DeleteDateColumn()
     deleted_column?: Date;
 
-    @Column("text", { array: true, nullable: true })
-    members: ProjectInviteMember[];
+    @OneToMany((_type) => ProjectInviteMember, (inviteUser) => inviteUser.project_id, { eager: true })
+    members_id: ProjectInviteMember[];
 
     @ManyToOne((_type) => UserEntity, (user) => user.project, { eager: false })
     @Exclude({ toPlainOnly: true })
     user: UserEntity;
-}
-
-export interface ProjectInviteMember {
-    email: string;
-    role: UsersRole;
 }

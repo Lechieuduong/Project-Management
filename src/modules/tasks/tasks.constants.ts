@@ -5,3 +5,7 @@ export enum TaskPriority {
     HIGH = 'High',
     NONE = 'None'
 }
+
+export enum TaskMessage {
+    TASK_EXIST = 'Task already exists'
+}

@@ -4,10 +4,11 @@ import { GetUser } from 'src/auth/decorators/get-user.decorator';
 import { apiResponse } from 'src/common/api-response/apiresponse';
 import { Repository } from 'typeorm';
 import { UserEntity } from '../users/entity/user.entity';
-import { AddMemberDto } from './dto/add-member.dto';
+import { UsersRepository } from '../users/users.repository';
 import { ChangeProjectStatusDto } from './dto/change-project-status.dto';
 import { CreateProjectDto } from './dto/create-project.dto';
 import { UpdateProjectDto } from './dto/update-project.dto';
+import { ProjectInviteMember } from './entity/project-invite-member.entity';
 import { ProjectEntity } from './entity/project.entity';
 import { ProjectsRepository } from './projects.repository';
 
@@ -15,7 +16,11 @@ import { ProjectsRepository } from './projects.repository';
 export class ProjectsService {
     constructor(
         @InjectRepository(ProjectsRepository)
-        private readonly projectsRepository: ProjectsRepository
+        private readonly projectsRepository: ProjectsRepository,
+        @InjectRepository(ProjectInviteMember)
+        private projectInviteMember: Repository<ProjectInviteMember>,
+        @InjectRepository(UsersRepository)
+        private readonly userRepository: UsersRepository,
     ) { }
 
     async createProject(
@@ -33,7 +38,7 @@ export class ProjectsService {
         const found = await this.projectsRepository.findOne(id);
 
         if (!found) {
-            throw new NotFoundException(`Task with ID: ${id} is not found`);
+            throw new NotFoundException(`Project with ID: ${id} is not found`);
         }
 
         return found;
@@ -92,16 +97,22 @@ export class ProjectsService {
         return apiResponse(HttpStatus.OK, 'Delete successful', {});
     }
 
-    async addMembers(addMembersDto: AddMemberDto, id: string) {
-        const { email, role } = addMembersDto;
+    async addMembersToProject(user_id: string, project_id: string) {
         try {
-            const project = await this.projectsRepository.findOne(id);
-            const newArr = project.members || [];
-            newArr.push({ email, role });
-            project.members = newArr;
-            project.save();
+            const findUser = await this.userRepository.findOne(user_id);
+            const findProject = await this.projectsRepository.findOne(project_id)
+
+            const inviteUser = this.projectInviteMember.create({
+                user_id: findUser,
+                project_id: findProject
+            })
+
+            this.projectInviteMember.save(inviteUser);
+
+            findProject.members_id.push(inviteUser);
 
             return apiResponse(HttpStatus.OK, 'Add members successful', {})
+
         } catch (error) {
             if (error.code === '23505') {
                 throw new ConflictException(
@@ -110,7 +121,6 @@ export class ProjectsService {
             }
 
             throw new InternalServerErrorException();
-
         }
     }
 }

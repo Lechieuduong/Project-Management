@@ -14,6 +14,7 @@ import { Exclude } from "class-transformer";
 import { defaultNameLength } from "src/common/constants/common.constants";
 import { UsersRole } from "../users.constants";
 import { ProjectEntity } from "src/modules/projects/entity/project.entity";
+import { ProjectInviteMember } from "src/modules/projects/entity/project-invite-member.entity";
 
 @Entity({ name: 'User' })
 export class UserEntity extends BaseEntity {
@@ -35,8 +36,8 @@ export class UserEntity extends BaseEntity {
     @Column({ default: false })
     verified: boolean;
 
-    @Column({ type: 'enum', enum: UsersRole, default: UsersRole.USER })
-    role: UsersRole;
+    @Column({ default: UsersRole.USER })
+    role: string;
 
     @Exclude({ toPlainOnly: true })
     @Column({ nullable: true })
@@ -50,6 +51,9 @@ export class UserEntity extends BaseEntity {
 
     @OneToMany((_type) => ProjectEntity, (projects) => projects.user, { eager: true })
     project: ProjectEntity[];
+
+    @OneToMany((_type) => ProjectInviteMember, (inviteUser) => inviteUser.user_id, { eager: true })
+    inviteUSer_id: ProjectInviteMember[];
 
     async validatePassword(passwword: string): Promise<boolean> {
         const hashedPassword = await bcrypt.compare(passwword, this.password);
