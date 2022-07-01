@@ -9,6 +9,8 @@ import { JwtStrategy } from './stategies/jwt.strategy';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { UsersRepository } from 'src/modules/users/users.repository';
 import { UserEntity } from 'src/modules/users/entity/user.entity';
+import { APP_GUARD } from '@nestjs/core';
+import { RolesGuard } from './guards/roles.guard';
 
 const passportModule = PassportModule.register({ defaultStrategy: 'jwt' });
 
@@ -26,7 +28,7 @@ const passportModule = PassportModule.register({ defaultStrategy: 'jwt' });
     TypeOrmModule.forFeature([UsersRepository, UserEntity])
   ],
   controllers: [AuthController],
-  providers: [AuthService, JwtStrategy],
+  providers: [AuthService, JwtStrategy, RolesGuard],
   exports: [AuthService, passportModule],
 })
 export class AuthModule { }

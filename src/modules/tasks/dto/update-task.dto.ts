@@ -26,8 +26,6 @@ export class UpdateTaskDto {
     @IsOptional()
     description: string;
 
-    @ApiProperty({ required: false })
-    @IsNotEmpty()
-    @IsOptional()
-    attachments: string;
+    @ApiProperty({ type: 'string', format: 'binary' })
+    attachments?: Express.Multer.File;
 }

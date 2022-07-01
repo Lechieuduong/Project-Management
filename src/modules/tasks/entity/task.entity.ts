@@ -1,7 +1,8 @@
-//import { UserEntity } from "src/modules/users/entity/user.entity";
-//import { ProjectEntity } from "src/modules/projects/entity/project.entity";
+import { ProjectInviteMember } from "src/modules/projects/entity/project-invite-member.entity";
+import { ProjectEntity } from "src/modules/projects/entity/project.entity";
 import { ProjectStatus } from "src/modules/projects/projects.constants";
-import { BaseEntity, Column, CreateDateColumn, DeleteDateColumn, Entity, PrimaryGeneratedColumn, UpdateDateColumn } from "typeorm";
+import { UserEntity } from "src/modules/users/entity/user.entity";
+import { BaseEntity, Column, CreateDateColumn, DeleteDateColumn, Entity, ManyToOne, OneToMany, PrimaryGeneratedColumn, UpdateDateColumn } from "typeorm";
 import { TaskPriority } from "../tasks.constants";
 
 @Entity({ name: 'Task' })
@@ -23,14 +24,6 @@ export class TaskEntity extends BaseEntity {
 
     @Column()
     image: string;
-    // @Column()
-    // asignees: UserEntity[]
-
-    // @Column()
-    // reporter: UserEntity
-
-    // @Column()
-    // project: ProjectEntity
 
     @Column({ nullable: true })
     taskParent?: boolean
@@ -47,4 +40,14 @@ export class TaskEntity extends BaseEntity {
     @DeleteDateColumn({ nullable: true })
     deleted_at: Date;
 
+    //Reporter
+    @ManyToOne((_type) => UserEntity, (user) => user.task_id)
+    user_id?: UserEntity;
+
+    //Assignee
+    @ManyToOne((_type) => ProjectInviteMember, (assignee) => assignee.task_id)
+    assignee_id?: ProjectInviteMember;
+
+    @ManyToOne((_type) => ProjectEntity, (project) => project.tasks_id)
+    project_id?: ProjectEntity;
 }

@@ -1,4 +1,5 @@
 import { Exclude } from "class-transformer";
+import { TaskEntity } from "src/modules/tasks/entity/task.entity";
 import { UserEntity } from "src/modules/users/entity/user.entity";
 import { UsersRole } from "src/modules/users/users.constants";
 import { BaseEntity, Column, CreateDateColumn, DeleteDateColumn, Entity, ManyToMany, ManyToOne, OneToMany, PrimaryGeneratedColumn, UpdateDateColumn } from "typeorm";
@@ -43,4 +44,7 @@ export class ProjectEntity extends BaseEntity {
     @ManyToOne((_type) => UserEntity, (user) => user.project, { eager: false })
     @Exclude({ toPlainOnly: true })
     user: UserEntity;
+
+    @OneToMany((_type) => TaskEntity, (tasks) => tasks.project_id, { eager: false })
+    tasks_id: TaskEntity[];
 }

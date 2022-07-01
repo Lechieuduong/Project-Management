@@ -1,4 +1,4 @@
-import { Body, Controller, Get, HttpCode, Patch, Post, Query, UploadedFile, UseGuards, UseInterceptors } from '@nestjs/common';
+import { Body, Controller, Get, HttpCode, Param, Patch, Post, Query, UploadedFile, UseGuards, UseInterceptors } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { ApiBearerAuth, ApiBody, ApiConsumes, ApiTags } from '@nestjs/swagger';
@@ -18,6 +18,13 @@ import { UsersService } from './users.service';
 @Controller('users')
 export class UsersController {
     constructor(private userService: UsersService) { }
+
+    @Get('/get_one_user/:id')
+    getUserById(
+        @Param('id') id: string
+    ) {
+        return this.userService.getUserById(id);
+    }
 
     @Get('/verified')
     verifyUser(@Query() verifyUserDto: VerifyUserDto) {

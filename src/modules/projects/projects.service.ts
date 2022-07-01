@@ -2,7 +2,7 @@ import { ConflictException, HttpStatus, Injectable, InternalServerErrorException
 import { InjectRepository } from '@nestjs/typeorm';
 import { GetUser } from 'src/auth/decorators/get-user.decorator';
 import { apiResponse } from 'src/common/api-response/apiresponse';
-import { Repository } from 'typeorm';
+import { getRepository, Repository } from 'typeorm';
 import { UserEntity } from '../users/entity/user.entity';
 import { UsersRepository } from '../users/users.repository';
 import { ChangeProjectStatusDto } from './dto/change-project-status.dto';
@@ -100,16 +100,18 @@ export class ProjectsService {
     async addMembersToProject(user_id: string, project_id: string) {
         try {
             const findUser = await this.userRepository.findOne(user_id);
-            const findProject = await this.projectsRepository.findOne(project_id)
+            const findProject = await this.projectsRepository.findOne(project_id);
 
             const inviteUser = this.projectInviteMember.create({
                 user_id: findUser,
                 project_id: findProject
             })
+            findUser.project.push(inviteUser.project_id);
 
             this.projectInviteMember.save(inviteUser);
 
             findProject.members_id.push(inviteUser);
+
 
             return apiResponse(HttpStatus.OK, 'Add members successful', {})
 
@@ -123,4 +125,25 @@ export class ProjectsService {
             throw new InternalServerErrorException();
         }
     }
+
+    async getListMemberInPRoject(project_id: string) {
+        const findProject = await this.projectsRepository.findOne(project_id);
+
+
+    }
+
+    async getProjectInfor(id: string) {
+        const findUser = await this.userRepository.findOne(id);
+        if (findUser) {
+            return await this.projectsRepository.createQueryBuilder()
+                .select('project.id, `projectName`, `projectCode`, `startDate`, `endDate`, `status`, `costs`')
+        }
+    }
+
+    /**
+    * SELECT "Project".* FROM "Project",
+    "Project Member", "User" where
+    "Project".id = "projectIdId" and
+    "userIdId" = "User".id
+     */
 }

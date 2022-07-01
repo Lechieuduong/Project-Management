@@ -13,13 +13,13 @@ import { ProjectEntity } from './entity/project.entity';
 import { ProjectsService } from './projects.service';
 
 @ApiTags('Project')
+@ApiBearerAuth()
 @Controller('projects')
+@UseGuards(AuthGuard(), RolesGuard)
 export class ProjectsController {
     constructor(private readonly projectsService: ProjectsService) { }
 
     @Post('/create_project')
-    @UseGuards(AuthGuard(), RolesGuard)
-    @ApiBearerAuth()
     @Roles(UsersRole.ADMIN, UsersRole.SUPERADMIN)
     createProject(
         @Body() createProjectDto: CreateProjectDto,
@@ -80,4 +80,13 @@ export class ProjectsController {
     ) {
         return this.projectsService.addMembersToProject(user_id, project_id)
     }
+
+    // @Get('/get_project_infor/:id')
+    // @UseGuards(AuthGuard(), RolesGuard)
+    // @ApiBearerAuth()
+    // getProjectInfor(
+    //     @GetUser() user: UserEntity
+    // ) {
+    //     return this.projectsService.getProjectInfor(user);
+    // }
 }

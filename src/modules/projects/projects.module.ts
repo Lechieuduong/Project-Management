@@ -7,6 +7,8 @@ import { ProjectEntity } from './entity/project.entity';
 import { PassportModule } from '@nestjs/passport';
 import { ProjectInviteMember } from './entity/project-invite-member.entity';
 import { UsersRepository } from '../users/users.repository';
+import { APP_GUARD } from '@nestjs/core';
+import { RolesGuard } from 'src/auth/guards/roles.guard';
 
 const passportModule = PassportModule.register({ defaultStrategy: 'jwt' });
 
@@ -15,7 +17,7 @@ const passportModule = PassportModule.register({ defaultStrategy: 'jwt' });
     passportModule,
     TypeOrmModule.forFeature([ProjectsRepository, ProjectEntity, ProjectInviteMember, UsersRepository])
   ],
-  providers: [ProjectsService],
+  providers: [ProjectsService, RolesGuard],
   controllers: [ProjectsController],
   exports: [ProjectsService],
 })
