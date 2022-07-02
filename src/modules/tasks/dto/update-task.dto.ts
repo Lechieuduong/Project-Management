@@ -7,25 +7,28 @@ export class UpdateTaskDto {
     @ApiProperty({ required: false })
     @IsNotEmpty()
     @IsOptional()
-    title: string;
+    title?: string;
 
-    @ApiProperty({ required: false })
+    @ApiProperty({ enum: ProjectStatus, required: false })
     @IsNotEmpty()
     @IsOptional()
     @IsEnum(ProjectStatus)
-    type: ProjectStatus;
+    type?: ProjectStatus;
 
     @ApiProperty({ required: false })
+    @IsNotEmpty()
+    @IsOptional()
+    description?: string;
+
+    @ApiProperty({ enum: TaskPriority, required: false })
     @IsNotEmpty()
     @IsOptional()
     @IsEnum(TaskPriority)
-    priority: TaskPriority;
+    priority?: TaskPriority;
 
-    @ApiProperty({ required: false })
-    @IsNotEmpty()
-    @IsOptional()
-    description: string;
+    @ApiProperty({ type: 'string', format: 'binary', required: false })
+    image?: Express.Multer.File;
 
-    @ApiProperty({ type: 'string', format: 'binary' })
-    attachments?: Express.Multer.File;
+    // @ApiProperty({ type: 'string', format: 'binary', required: false })
+    // attachments?: Express.Multer.File;
 }

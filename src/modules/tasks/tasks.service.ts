@@ -1,4 +1,4 @@
-import { ConflictException, HttpStatus, Injectable, InternalServerErrorException, NotFoundException } from '@nestjs/common';
+import { BadRequestException, ConflictException, HttpStatus, Injectable, InternalServerErrorException, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { apiResponse } from 'src/common/api-response/apiresponse';
 import { Repository } from 'typeorm';
@@ -6,6 +6,8 @@ import { CreateTaskDto } from './dto/create-task.dto';
 import { UpdateTaskDto } from './dto/update-task.dto';
 import { TaskEntity } from './entity/task.entity';
 import { TaskMessage } from './tasks.constants';
+import * as path from 'path'
+import * as fs from 'fs'
 
 @Injectable()
 export class TasksService {
@@ -60,28 +62,37 @@ export class TasksService {
     async updateTask(
         id: string,
         updateTaskDto: UpdateTaskDto,
-        files: Array<Express.Multer.File>
+        file: Express.Multer.File
     ) {
-        const checkTask = await this.getTaskById(id);
+        try {
+            const checkTask = await this.tasksRepository.findOne(id);
 
-        if (!checkTask)
-            throw new NotFoundException(`Task with ID: ${id} is not found.`);
+            if (!checkTask) {
+                return apiResponse(404, 'Task is not found');
+            }
 
-        const { title, type, priority, description } = updateTaskDto;
+            if (file) {
+                if (fs.existsSync(checkTask.image)) {
+                    fs.unlinkSync(`./${checkTask.image}`);
+                }
+                checkTask.image = file.path;
+            }
 
-        checkTask.title = title;
+            const { title, type, description, priority } = updateTaskDto;
+            checkTask.title = title;
 
-        checkTask.type = type;
+            checkTask.type = type;
 
-        checkTask.priority = priority;
+            checkTask.description = description;
 
-        checkTask.description = description;
+            checkTask.priority = priority;
 
-        //checkTask.attachments = path;
+            await this.tasksRepository.save(checkTask);
 
-        await this.tasksRepository.save(checkTask);
-
-        return apiResponse(HttpStatus.OK, 'Update task successfully.', {});
+            return apiResponse(HttpStatus.OK, 'Update Task Successful', checkTask);
+        } catch (error) {
+            throw new BadRequestException('Sever error')
+        }
     }
 
     async deleteTask(id: string) {
