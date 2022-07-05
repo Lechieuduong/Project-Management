@@ -56,7 +56,7 @@ export class UserEntity extends BaseEntity {
     @OneToMany((_type) => ProjectInviteMember, (inviteUser) => inviteUser.user_id, { eager: true })
     inviteUSer_id: ProjectInviteMember[];
 
-    @OneToMany((_type) => TaskEntity, (tasks) => tasks.user_id, { eager: true })
+    @OneToMany((_type) => TaskEntity, (tasks) => tasks.user, { eager: true })
     task_id: TaskEntity[];
 
     async validatePassword(passwword: string): Promise<boolean> {

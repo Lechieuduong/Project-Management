@@ -106,12 +106,10 @@ export class ProjectsService {
                 user_id: findUser,
                 project_id: findProject
             })
-            findUser.project.push(inviteUser.project_id);
 
             this.projectInviteMember.save(inviteUser);
 
             findProject.members_id.push(inviteUser);
-
 
             return apiResponse(HttpStatus.OK, 'Add members successful', {})
 
@@ -124,12 +122,6 @@ export class ProjectsService {
 
             throw new InternalServerErrorException();
         }
-    }
-
-    async getListMemberInPRoject(project_id: string) {
-        const findProject = await this.projectsRepository.findOne(project_id);
-
-
     }
 
     async getProjectInfor(id: string) {

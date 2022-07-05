@@ -8,24 +8,35 @@ import { TaskEntity } from './entity/task.entity';
 import { TaskMessage } from './tasks.constants';
 import * as path from 'path'
 import * as fs from 'fs'
+import { UserEntity } from '../users/entity/user.entity';
+import { UsersRepository } from '../users/users.repository';
+import { ProjectInviteMember } from '../projects/entity/project-invite-member.entity';
+import { title } from 'process';
 
 @Injectable()
 export class TasksService {
     constructor(
         @InjectRepository(TaskEntity)
-        private readonly tasksRepository: Repository<TaskEntity>
+        private readonly tasksRepository: Repository<TaskEntity>,
+
+        @InjectRepository(UsersRepository)
+        private readonly userRepository: UsersRepository,
+
+        @InjectRepository(ProjectInviteMember)
+        private readonly projectInviteMember: Repository<ProjectInviteMember>
     ) { }
 
     async createTask(
         createTaskDto: CreateTaskDto,
-        file: Express.Multer.File
-
+        file: Express.Multer.File,
+        user: UserEntity
     ) {
         const { title } = createTaskDto;
         const path = file.path;
         const newTask = this.tasksRepository.create({
             title,
-            image: path
+            image: path,
+            user
         });
 
         try {
@@ -47,8 +58,6 @@ export class TasksService {
         return this.tasksRepository.find();
     }
 
-
-
     async getTaskById(id: string): Promise<TaskEntity> {
         const found = await this.tasksRepository.findOne(id);
 
@@ -56,13 +65,13 @@ export class TasksService {
             throw new NotFoundException(`Task with ID: ${id} is not found`);
         }
 
-        return found;
+        return found
     }
 
     async updateTask(
         id: string,
         updateTaskDto: UpdateTaskDto,
-        file: Express.Multer.File
+        file: Express.Multer.File,
     ) {
         try {
             const checkTask = await this.tasksRepository.findOne(id);
@@ -79,6 +88,7 @@ export class TasksService {
             }
 
             const { title, type, description, priority } = updateTaskDto;
+
             checkTask.title = title;
 
             checkTask.type = type;
@@ -86,6 +96,8 @@ export class TasksService {
             checkTask.description = description;
 
             checkTask.priority = priority;
+
+            //checkTask.attachments.push(files.toString());
 
             await this.tasksRepository.save(checkTask);
 
@@ -103,5 +115,41 @@ export class TasksService {
         }
 
         return apiResponse(HttpStatus.OK, 'Delete successful.', {});
+    }
+
+    async assignTaskForUser(user_id: string, task_id: string) {
+        try {
+            const findUser = await this.userRepository.findOne(user_id);
+            const findTask = await this.tasksRepository.findOne(task_id);
+
+            // const assignUser = this.projectInviteMember
+            //             .createQueryBuilder()
+            //             .update()
+            //             .set({user_id: findUser})
+            //             .where("taskIdId = :taskIdId", {findTask})
+            //             .execute()
+
+            const assignUser = this.projectInviteMember.create({
+                user_id: findUser,
+                task_id: findTask
+            })
+
+            this.projectInviteMember.save(assignUser);
+
+            if (findTask.assignee_id.length >= 1) {
+                return apiResponse(HttpStatus.BAD_REQUEST, 'Only assign for 1 people', {});
+            } else {
+                findTask.assignee_id.push(assignUser);
+                return apiResponse(HttpStatus.OK, 'Assign successful', {});
+            }
+        } catch (error) {
+            if (error.code === '23505') {
+                throw new ConflictException(
+                    `This member already assign to this task.`,
+                )
+            }
+
+            throw new InternalServerErrorException();
+        }
     }
 }

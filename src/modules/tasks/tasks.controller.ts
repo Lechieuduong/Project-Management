@@ -1,8 +1,11 @@
-import { Body, Controller, Delete, Get, Param, Patch, Post, Put, UploadedFile, UseInterceptors } from '@nestjs/common';
+import { Body, Controller, Delete, Get, Param, Patch, Post, Put, UploadedFile, UploadedFiles, UseGuards, UseInterceptors } from '@nestjs/common';
+import { AuthGuard } from '@nestjs/passport';
 import { FileInterceptor } from '@nestjs/platform-express';
-import { ApiConsumes, ApiTags } from '@nestjs/swagger';
+import { ApiBearerAuth, ApiConsumes, ApiTags } from '@nestjs/swagger';
 import { diskStorage } from 'multer';
 import { extname } from 'path';
+import { GetUser } from 'src/auth/decorators/get-user.decorator';
+import { UserEntity } from '../users/entity/user.entity';
 import { CreateTaskDto } from './dto/create-task.dto';
 import { UpdateTaskDto } from './dto/update-task.dto';
 import { TaskEntity } from './entity/task.entity';
@@ -15,6 +18,8 @@ export class TasksController {
 
     @Post('/create_task')
     @ApiConsumes('multipart/form-data')
+    @ApiBearerAuth()
+    @UseGuards(AuthGuard())
     @UseInterceptors(FileInterceptor('image',
         {
             storage: diskStorage({
@@ -32,9 +37,10 @@ export class TasksController {
     )
     createTask(
         @Body() createTaskDto: CreateTaskDto,
-        @UploadedFile() file: Express.Multer.File
+        @UploadedFile() file: Express.Multer.File,
+        @GetUser() user: UserEntity
     ) {
-        return this.taskService.createTask(createTaskDto, file);
+        return this.taskService.createTask(createTaskDto, file, user);
     }
 
     @Get('/get_all_tasks')
@@ -67,7 +73,7 @@ export class TasksController {
     updateTask(
         @Body() updateTaskDto: UpdateTaskDto,
         @Param('id') id: string,
-        @UploadedFile() file: Express.Multer.File
+        @UploadedFile() file: Express.Multer.File,
     ) {
         return this.taskService.updateTask(id, updateTaskDto, file);
     }
@@ -77,5 +83,14 @@ export class TasksController {
         @Param('id') id: string
     ) {
         return this.taskService.deleteTask(id);
+    }
+
+    @Post('/assign_user_into_task/:user_id&:task_id')
+    @ApiBearerAuth()
+    assignTaskForUser(
+        @Param('user_id') user_id: string,
+        @Param('task_id') task_id: string
+    ) {
+        return this.taskService.assignTaskForUser(user_id, task_id);
     }
 }

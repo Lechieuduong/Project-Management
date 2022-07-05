@@ -29,6 +29,6 @@ export class UpdateTaskDto {
     @ApiProperty({ type: 'string', format: 'binary', required: false })
     image?: Express.Multer.File;
 
-    // @ApiProperty({ type: 'string', format: 'binary', required: false })
-    // attachments?: Express.Multer.File;
+    @ApiProperty({ type: 'string', format: 'binary', required: false })
+    attachments?: Array<Express.Multer.File>;
 }
