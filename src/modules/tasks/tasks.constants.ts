@@ -9,3 +9,8 @@ export enum TaskPriority {
 export enum TaskMessage {
     TASK_EXIST = 'Task already exists'
 }
+
+export enum TaskType {
+    TASK = 'Task',
+    SUBTASK = 'Sub-Task'
+}

@@ -13,7 +13,7 @@ export class UpdateTaskDto {
     @IsNotEmpty()
     @IsOptional()
     @IsEnum(ProjectStatus)
-    type?: ProjectStatus;
+    status?: ProjectStatus;
 
     @ApiProperty({ required: false })
     @IsNotEmpty()

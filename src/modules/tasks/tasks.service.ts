@@ -1,4 +1,4 @@
-import { BadRequestException, ConflictException, HttpStatus, Injectable, InternalServerErrorException, NotFoundException } from '@nestjs/common';
+import { BadRequestException, ConflictException, forwardRef, HttpStatus, Inject, Injectable, InternalServerErrorException, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { apiResponse } from 'src/common/api-response/apiresponse';
 import { Repository } from 'typeorm';
@@ -12,6 +12,9 @@ import { UserEntity } from '../users/entity/user.entity';
 import { UsersRepository } from '../users/users.repository';
 import { ProjectInviteMember } from '../projects/entity/project-invite-member.entity';
 import { title } from 'process';
+import { ProjectStatus } from '../projects/projects.constants';
+import moment from 'moment';
+import { SendMailService } from 'src/common/send-mail/send-mail.service';
 
 @Injectable()
 export class TasksService {
@@ -23,7 +26,10 @@ export class TasksService {
         private readonly userRepository: UsersRepository,
 
         @InjectRepository(ProjectInviteMember)
-        private readonly projectInviteMember: Repository<ProjectInviteMember>
+        private readonly projectInviteMember: Repository<ProjectInviteMember>,
+
+        @Inject(forwardRef(() => SendMailService))
+        private sendMailService: SendMailService
     ) { }
 
     async createTask(
@@ -87,11 +93,11 @@ export class TasksService {
                 checkTask.image = file.path;
             }
 
-            const { title, type, description, priority } = updateTaskDto;
+            const { title, status, description, priority } = updateTaskDto;
 
             checkTask.title = title;
 
-            checkTask.type = type;
+            checkTask.status = status;
 
             checkTask.description = description;
 
@@ -121,26 +127,22 @@ export class TasksService {
         try {
             const findUser = await this.userRepository.findOne(user_id);
             const findTask = await this.tasksRepository.findOne(task_id);
-
-            // const assignUser = this.projectInviteMember
-            //             .createQueryBuilder()
-            //             .update()
-            //             .set({user_id: findUser})
-            //             .where("taskIdId = :taskIdId", {findTask})
-            //             .execute()
-
-            const assignUser = this.projectInviteMember.create({
-                user_id: findUser,
-                task_id: findTask
-            })
-
-            this.projectInviteMember.save(assignUser);
-
             if (findTask.assignee_id.length >= 1) {
                 return apiResponse(HttpStatus.BAD_REQUEST, 'Only assign for 1 people', {});
             } else {
+                const assignUser = this.projectInviteMember.create({
+                    user_id: findUser,
+                    task_id: findTask
+                })
+
+                this.projectInviteMember.save(assignUser);
                 findTask.assignee_id.push(assignUser);
-                return apiResponse(HttpStatus.OK, 'Assign successful', {});
+                if (findTask.status === ProjectStatus.BUG) {
+                    this.sendMailAssignMemberIfTaskHasBug(findUser.email);
+                    return apiResponse(HttpStatus.OK, 'Assign successful but this task has bug', {});
+                } else {
+                    return apiResponse(HttpStatus.OK, 'Assign successful', {});
+                }
             }
         } catch (error) {
             if (error.code === '23505') {
@@ -148,8 +150,30 @@ export class TasksService {
                     `This member already assign to this task.`,
                 )
             }
-
             throw new InternalServerErrorException();
         }
     }
+
+    async sendMailAssignMemberIfTaskHasBug(email: string) {
+        const user = await this.userRepository.findOne({ email });
+
+        if (!user)
+            throw new NotFoundException(`User have email: ${email} is not found`);
+
+        if (!user.verified)
+            throw new BadRequestException('You have to register or veried your account');
+
+        const time = new Date().getTime() - user.updated_at.getTime();
+        const getTimeSendMail = time / (100 * 60 * 5);
+
+        if (getTimeSendMail < 1) {
+            throw new BadRequestException(`Please wait ${(1 - getTimeSendMail) * 5 * 60}s`);
+        }
+
+        const url = process.env.DOMAIN + 'tasks/task_has_bug?email=' + email;
+        const res = await this.sendMailService.sendMailAssignMemberIfTaskHasBug(url, email)
+
+        return apiResponse(HttpStatus.OK, res.response, {})
+    }
+
 }

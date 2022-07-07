@@ -3,7 +3,7 @@ import { ProjectEntity } from "src/modules/projects/entity/project.entity";
 import { ProjectStatus } from "src/modules/projects/projects.constants";
 import { UserEntity } from "src/modules/users/entity/user.entity";
 import { BaseEntity, Column, CreateDateColumn, DeleteDateColumn, Entity, JoinColumn, ManyToOne, OneToMany, OneToOne, PrimaryGeneratedColumn, UpdateDateColumn } from "typeorm";
-import { TaskPriority } from "../tasks.constants";
+import { TaskPriority, TaskType } from "../tasks.constants";
 
 @Entity({ name: 'Task' })
 export class TaskEntity extends BaseEntity {
@@ -13,8 +13,11 @@ export class TaskEntity extends BaseEntity {
     @Column()
     title: string;
 
+    @Column({ default: TaskType.TASK })
+    type: TaskType;
+
     @Column({ default: ProjectStatus.BUG })
-    type: ProjectStatus
+    status: ProjectStatus
 
     @Column({ nullable: true })
     description: string;
