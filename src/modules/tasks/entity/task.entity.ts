@@ -33,7 +33,7 @@ export class TaskEntity extends BaseEntity {
     taskParent: TaskEntity;
 
     @OneToMany(type => TaskEntity, task => task.taskParent)
-    subtask: TaskEntity[];
+    subtask: TaskEntity[]
 
     @Column("text", { array: true, nullable: true })
     attachments?: string[];
@@ -57,4 +57,5 @@ export class TaskEntity extends BaseEntity {
 
     @ManyToOne((_type) => ProjectEntity, (project) => project.tasks_id)
     project_id: ProjectEntity;
+    newSubTask: TaskEntity[];
 }

@@ -16,12 +16,14 @@ import { ProjectStatus } from '../projects/projects.constants';
 import moment from 'moment';
 import { SendMailService } from 'src/common/send-mail/send-mail.service';
 import { find } from 'rxjs';
+import { ProjectsRepository } from '../projects/projects.repository';
+import { TasksRepository } from './tasks.repository';
 
 @Injectable()
 export class TasksService {
     constructor(
-        @InjectRepository(TaskEntity)
-        private readonly tasksRepository: Repository<TaskEntity>,
+        @InjectRepository(TasksRepository)
+        private readonly tasksRepository: TasksRepository,
 
         @InjectRepository(UsersRepository)
         private readonly userRepository: UsersRepository,
@@ -30,14 +32,20 @@ export class TasksService {
         private readonly projectInviteMember: Repository<ProjectInviteMember>,
 
         @Inject(forwardRef(() => SendMailService))
-        private sendMailService: SendMailService
+        private sendMailService: SendMailService,
+
+        @InjectRepository(ProjectsRepository)
+        private readonly projectRepository: ProjectsRepository
     ) { }
 
     async createTask(
         createTaskDto: CreateTaskDto,
         file: Express.Multer.File,
-        user: UserEntity
+        user: UserEntity,
+        id: string
     ) {
+        const findProject = await this.projectRepository.findOne(id);
+
         const { title } = createTaskDto;
         const path = file.path;
         const newTask = this.tasksRepository.create({
@@ -46,6 +54,8 @@ export class TasksService {
             user
         });
 
+        newTask.project_id = findProject;
+
         await this.tasksRepository.save(newTask);
 
         return apiResponse(HttpStatus.OK, 'Create task successful', {});
@@ -53,13 +63,20 @@ export class TasksService {
     }
 
     async getAllTasks() {
-        return this.tasksRepository.find();
+        const found = await createQueryBuilder(TaskEntity, 'task')
+            .leftJoinAndSelect('task.subtask', 'Task')
+            .leftJoinAndSelect('task.assignee_id', 'Project_Member')
+            .leftJoinAndSelect('task.project_id', 'Project')
+            .getMany();
+
+        return found;
     }
 
     async getTaskById(id: string): Promise<TaskEntity> {
         const found = await createQueryBuilder(TaskEntity, 'task')
             .leftJoinAndSelect('task.subtask', 'Task')
-            .leftJoinAndSelect('task.assignee_id', 'Project Member')
+            .leftJoinAndSelect('task.assignee_id', 'Project_Member')
+            .leftJoinAndSelect('task.project_id', 'Project')
             .where('task.id = :id', { id })
             .getOne();
 
@@ -165,7 +182,7 @@ export class TasksService {
         user: UserEntity,
         id: string
     ) {
-        const findTask = await this.tasksRepository.findOne(id);
+        const findTask = await this.tasksRepository.findOne({ id });
         const { title } = createTaskDto;
         const path = file.path;
         const newSubTask = this.tasksRepository.create({

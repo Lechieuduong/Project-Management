@@ -28,7 +28,7 @@ export class TasksController {
     @UseInterceptors(FileInterceptor('image',
         {
             storage: diskStorage({
-                destination: './uploads/task-img',
+                destination: './upload/task-img',
                 filename: (req, file, cb) => {
                     // Generating a 32 random chars long string
                     const randomName = Array(32)
@@ -43,9 +43,10 @@ export class TasksController {
     createTask(
         @Body() createTaskDto: CreateTaskDto,
         @UploadedFile() file: Express.Multer.File,
-        @GetUser() user: UserEntity
+        @GetUser() user: UserEntity,
+        @Param('project-id') id: string
     ) {
-        return this.taskService.createTask(createTaskDto, file, user);
+        return this.taskService.createTask(createTaskDto, file, user, id);
     }
 
     @Get('/get_all_tasks')
@@ -99,7 +100,7 @@ export class TasksController {
         return this.taskService.assignTaskForUser(user_id, task_id);
     }
 
-    @Post('/create_subtask')
+    @Post('/create_subtask/:id')
     @ApiConsumes('multipart/form-data')
     // @UseGuards(AuthGuard(), RolesGuard)
     // @Roles(UsersRole.ADMIN, UsersRole.SUPERADMIN)
