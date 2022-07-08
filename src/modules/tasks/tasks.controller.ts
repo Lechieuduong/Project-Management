@@ -5,21 +5,26 @@ import { ApiBearerAuth, ApiConsumes, ApiTags } from '@nestjs/swagger';
 import { diskStorage } from 'multer';
 import { extname } from 'path';
 import { GetUser } from 'src/auth/decorators/get-user.decorator';
+import { Roles } from 'src/auth/decorators/role.decorator';
+import { RolesGuard } from 'src/auth/guards/roles.guard';
 import { UserEntity } from '../users/entity/user.entity';
+import { UsersRole } from '../users/users.constants';
 import { CreateTaskDto } from './dto/create-task.dto';
 import { UpdateTaskDto } from './dto/update-task.dto';
 import { TaskEntity } from './entity/task.entity';
 import { TasksService } from './tasks.service';
 
 @ApiTags('Task')
+//@ApiBearerAuth()
+//@UseGuards(AuthGuard())
 @Controller('tasks')
 export class TasksController {
     constructor(private readonly taskService: TasksService) { }
 
     @Post('/create_task')
     @ApiConsumes('multipart/form-data')
-    @ApiBearerAuth()
-    @UseGuards(AuthGuard())
+    // @UseGuards(AuthGuard(), RolesGuard)
+    // @Roles(UsersRole.ADMIN, UsersRole.SUPERADMIN)
     @UseInterceptors(FileInterceptor('image',
         {
             storage: diskStorage({
@@ -92,5 +97,33 @@ export class TasksController {
         @Param('task_id') task_id: string
     ) {
         return this.taskService.assignTaskForUser(user_id, task_id);
+    }
+
+    @Post('/create_subtask')
+    @ApiConsumes('multipart/form-data')
+    // @UseGuards(AuthGuard(), RolesGuard)
+    // @Roles(UsersRole.ADMIN, UsersRole.SUPERADMIN)
+    @UseInterceptors(FileInterceptor('image',
+        {
+            storage: diskStorage({
+                destination: './upload/task-img',
+                filename: (req, file, cb) => {
+                    // Generating a 32 random chars long string
+                    const randomName = Array(32)
+                        .fill(null)
+                        .map(() => Math.round(Math.random() * 16).toString(16)).join('');
+                    //Calling the callback passing the random name generated with the original extension name
+                    cb(null, `${randomName}${extname(file.originalname)}`);
+                },
+            }),
+        })
+    )
+    createSubTask(
+        @Body() createTaskDto: CreateTaskDto,
+        @UploadedFile() file: Express.Multer.File,
+        @GetUser() user: UserEntity,
+        @Param('id') id: string
+    ) {
+        return this.taskService.createSubTask(createTaskDto, file, user, id);
     }
 }

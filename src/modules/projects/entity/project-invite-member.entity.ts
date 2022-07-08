@@ -3,7 +3,7 @@ import { UserEntity } from "src/modules/users/entity/user.entity";
 import { BaseEntity, Column, Entity, JoinColumn, ManyToOne, OneToOne, PrimaryGeneratedColumn } from "typeorm";
 import { ProjectEntity } from "./project.entity";
 
-@Entity({ name: 'Project Member' })
+@Entity({ name: 'Project_Member' })
 export class ProjectInviteMember extends BaseEntity {
     @PrimaryGeneratedColumn('uuid')
     id: string;

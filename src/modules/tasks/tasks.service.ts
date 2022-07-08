@@ -1,11 +1,11 @@
 import { BadRequestException, ConflictException, forwardRef, HttpStatus, Inject, Injectable, InternalServerErrorException, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { apiResponse } from 'src/common/api-response/apiresponse';
-import { Repository } from 'typeorm';
+import { createQueryBuilder, Repository } from 'typeorm';
 import { CreateTaskDto } from './dto/create-task.dto';
 import { UpdateTaskDto } from './dto/update-task.dto';
 import { TaskEntity } from './entity/task.entity';
-import { TaskMessage } from './tasks.constants';
+import { TaskMessage, TaskType } from './tasks.constants';
 import * as path from 'path'
 import * as fs from 'fs'
 import { UserEntity } from '../users/entity/user.entity';
@@ -15,6 +15,7 @@ import { title } from 'process';
 import { ProjectStatus } from '../projects/projects.constants';
 import moment from 'moment';
 import { SendMailService } from 'src/common/send-mail/send-mail.service';
+import { find } from 'rxjs';
 
 @Injectable()
 export class TasksService {
@@ -45,19 +46,10 @@ export class TasksService {
             user
         });
 
-        try {
-            await this.tasksRepository.save(newTask);
+        await this.tasksRepository.save(newTask);
 
-            return apiResponse(HttpStatus.OK, 'Create task successful', {});
-        } catch (error) {
-            console.log(error);
+        return apiResponse(HttpStatus.OK, 'Create task successful', {});
 
-            if (error.code === '23505') {
-                throw new ConflictException(TaskMessage.TASK_EXIST);
-            }
-
-            throw new InternalServerErrorException();
-        }
     }
 
     async getAllTasks() {
@@ -65,7 +57,11 @@ export class TasksService {
     }
 
     async getTaskById(id: string): Promise<TaskEntity> {
-        const found = await this.tasksRepository.findOne(id);
+        const found = await createQueryBuilder(TaskEntity, 'task')
+            .leftJoinAndSelect('task.subtask', 'Task')
+            .leftJoinAndSelect('task.assignee_id', 'Project Member')
+            .where('task.id = :id', { id })
+            .getOne();
 
         if (!found) {
             throw new NotFoundException(`Task with ID: ${id} is not found`);
@@ -79,38 +75,34 @@ export class TasksService {
         updateTaskDto: UpdateTaskDto,
         file: Express.Multer.File,
     ) {
-        try {
-            const checkTask = await this.tasksRepository.findOne(id);
+        const checkTask = await this.tasksRepository.findOne(id);
 
-            if (!checkTask) {
-                return apiResponse(404, 'Task is not found');
-            }
-
-            if (file) {
-                if (fs.existsSync(checkTask.image)) {
-                    fs.unlinkSync(`./${checkTask.image}`);
-                }
-                checkTask.image = file.path;
-            }
-
-            const { title, status, description, priority } = updateTaskDto;
-
-            checkTask.title = title;
-
-            checkTask.status = status;
-
-            checkTask.description = description;
-
-            checkTask.priority = priority;
-
-            //checkTask.attachments.push(files.toString());
-
-            await this.tasksRepository.save(checkTask);
-
-            return apiResponse(HttpStatus.OK, 'Update Task Successful', checkTask);
-        } catch (error) {
-            throw new BadRequestException('Sever error')
+        if (!checkTask) {
+            return apiResponse(404, 'Task is not found');
         }
+
+        if (file) {
+            if (fs.existsSync(checkTask.image)) {
+                fs.unlinkSync(`./${checkTask.image}`);
+            }
+            checkTask.image = file.path;
+        }
+
+        const { title, status, description, priority } = updateTaskDto;
+
+        checkTask.title = title;
+
+        checkTask.status = status;
+
+        checkTask.description = description;
+
+        checkTask.priority = priority;
+
+        //checkTask.attachments.push(files.toString());
+
+        await this.tasksRepository.save(checkTask);
+
+        return apiResponse(HttpStatus.OK, 'Update Task Successful', checkTask);
     }
 
     async deleteTask(id: string) {
@@ -124,33 +116,24 @@ export class TasksService {
     }
 
     async assignTaskForUser(user_id: string, task_id: string) {
-        try {
-            const findUser = await this.userRepository.findOne(user_id);
-            const findTask = await this.tasksRepository.findOne(task_id);
-            if (findTask.assignee_id.length >= 1) {
-                return apiResponse(HttpStatus.BAD_REQUEST, 'Only assign for 1 people', {});
-            } else {
-                const assignUser = this.projectInviteMember.create({
-                    user_id: findUser,
-                    task_id: findTask
-                })
+        const findUser = await this.userRepository.findOne(user_id);
+        const findTask = await this.tasksRepository.findOne(task_id);
+        if (findTask.assignee_id.length >= 1) {
+            return apiResponse(HttpStatus.BAD_REQUEST, 'Only assign for 1 people', {});
+        } else {
+            const assignUser = this.projectInviteMember.create({
+                user_id: findUser,
+                task_id: findTask
+            })
 
-                this.projectInviteMember.save(assignUser);
-                findTask.assignee_id.push(assignUser);
-                if (findTask.status === ProjectStatus.BUG) {
-                    this.sendMailAssignMemberIfTaskHasBug(findUser.email);
-                    return apiResponse(HttpStatus.OK, 'Assign successful but this task has bug', {});
-                } else {
-                    return apiResponse(HttpStatus.OK, 'Assign successful', {});
-                }
+            this.projectInviteMember.save(assignUser);
+            findTask.assignee_id.push(assignUser);
+            if (findTask.status === ProjectStatus.BUG) {
+                this.sendMailAssignMemberIfTaskHasBug(findUser.email);
+                return apiResponse(HttpStatus.OK, 'Assign successful but this task has bug', {});
+            } else {
+                return apiResponse(HttpStatus.OK, 'Assign successful', {});
             }
-        } catch (error) {
-            if (error.code === '23505') {
-                throw new ConflictException(
-                    `This member already assign to this task.`,
-                )
-            }
-            throw new InternalServerErrorException();
         }
     }
 
@@ -174,6 +157,29 @@ export class TasksService {
         const res = await this.sendMailService.sendMailAssignMemberIfTaskHasBug(url, email)
 
         return apiResponse(HttpStatus.OK, res.response, {})
+    }
+
+    async createSubTask(
+        createTaskDto: CreateTaskDto,
+        file: Express.Multer.File,
+        user: UserEntity,
+        id: string
+    ) {
+        const findTask = await this.tasksRepository.findOne(id);
+        const { title } = createTaskDto;
+        const path = file.path;
+        const newSubTask = this.tasksRepository.create({
+            title,
+            image: path,
+            user,
+            type: TaskType.SUBTASK
+        });
+
+        newSubTask.taskParent = findTask;
+
+        await this.tasksRepository.save(newSubTask);
+
+        return apiResponse(HttpStatus.OK, 'Create sub-task successful', {});
     }
 
 }

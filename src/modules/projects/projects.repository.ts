@@ -19,23 +19,6 @@ export class ProjectsRepository extends Repository<ProjectEntity> {
             costs,
             user
         })
-
-        try {
-            await this.save(newProject);
-
-            return apiResponse(HttpStatus.OK, 'Create project successful', {});
-        } catch (error) {
-            console.log(error);
-
-            if (error.code === '23505') {
-                throw new ConflictException(ProjectMessage.PROJECT_EXIST);
-            }
-
-            throw new InternalServerErrorException();
-        }
-    }
-
-    async getAllProjects() {
-        return this.find();
+        return await this.save(newProject);
     }
 }

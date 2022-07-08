@@ -1,8 +1,7 @@
-import { ConflictException, HttpStatus, Injectable, InternalServerErrorException, NotFoundException } from '@nestjs/common';
+import { BadRequestException, ConflictException, HttpStatus, Injectable, InternalServerErrorException, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { GetUser } from 'src/auth/decorators/get-user.decorator';
 import { apiResponse } from 'src/common/api-response/apiresponse';
-import { getRepository, Repository } from 'typeorm';
+import { createQueryBuilder, getRepository, Repository } from 'typeorm';
 import { UserEntity } from '../users/entity/user.entity';
 import { UsersRepository } from '../users/users.repository';
 import { ChangeProjectStatusDto } from './dto/change-project-status.dto';
@@ -27,11 +26,22 @@ export class ProjectsService {
         createProjectDto: CreateProjectDto,
         user: UserEntity
     ) {
-        return this.projectsRepository.createProject(createProjectDto, user);
+        const newProject = await this.projectsRepository.createProject(createProjectDto, user);
+
+        await this.addMembersToProject(user.id, newProject.id)
+
+        return apiResponse(HttpStatus.CREATED, 'Create project successful', { newProject })
     }
 
-    async getAllProjects() {
-        return this.projectsRepository.getAllProjects();
+    async getAllProjects(user: UserEntity) {
+        // const projectQuery = createQueryBuilder(ProjectEntity, 'Project')
+        //     .leftJoinAndSelect('Project.members_id', 'Project_Member')
+        //     .leftJoinAndSelect('Project_Member.user_id', 'User')
+        //     .where('User.id = :id', { id: user.id })
+
+
+        // return await projectQuery.getMany();
+        return this.projectsRepository.find();
     }
 
     async getProjectById(id: string): Promise<ProjectEntity> {
@@ -98,38 +108,33 @@ export class ProjectsService {
     }
 
     async addMembersToProject(user_id: string, project_id: string) {
-        try {
-            const findUser = await this.userRepository.findOne(user_id);
-            const findProject = await this.projectsRepository.findOne(project_id);
+        const findUser = await this.userRepository.findOne(user_id);
+        const findProject = await this.projectsRepository.findOne(project_id);
 
-            const inviteUser = this.projectInviteMember.create({
-                user_id: findUser,
-                project_id: findProject
-            })
+        const checkExist = await this.projectInviteMember.findOne({ user_id: findUser, project_id: findProject })
 
-            this.projectInviteMember.save(inviteUser);
-
-            findProject.members_id.push(inviteUser);
-
-            return apiResponse(HttpStatus.OK, 'Add members successful', {})
-
-        } catch (error) {
-            if (error.code === '23505') {
-                throw new ConflictException(
-                    `This member already exists.`,
-                );
-            }
-
-            throw new InternalServerErrorException();
+        if (checkExist) {
+            throw new BadRequestException('This member already exists.')
         }
+        const inviteUser = this.projectInviteMember.create({
+            user_id: findUser,
+            project_id: findProject
+        })
+
+        this.projectInviteMember.save(inviteUser);
+
+        findProject.members_id.push(inviteUser);
+
+        return apiResponse(HttpStatus.OK, 'Add members successful', {});
     }
 
-    async getProjectInfor(id: string) {
-        const findUser = await this.userRepository.findOne(id);
-        if (findUser) {
-            return await this.projectsRepository.createQueryBuilder()
-                .select('project.id, `projectName`, `projectCode`, `startDate`, `endDate`, `status`, `costs`')
-        }
+    async getProjectInfor(user: UserEntity) {
+        const projectQuery = createQueryBuilder(ProjectEntity, 'Project')
+            .leftJoinAndSelect('Project.members_id', 'Project_Member')
+            .leftJoinAndSelect('Project_Member.user_id', 'User')
+            .where('User.id = :id', { id: user.id })
+
+        return await projectQuery.getMany();
     }
 
     /**

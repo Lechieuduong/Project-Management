@@ -6,6 +6,8 @@ import { UsersModule } from './modules/users/users.module';
 import { AuthModule } from './auth/auth.module';
 import { ProjectsModule } from './modules/projects/projects.module';
 import { TasksModule } from './modules/tasks/tasks.module';
+import { APP_FILTER } from '@nestjs/core';
+import { HttpExceptionFilter } from './common/filter/http-exception.filter';
 
 @Module({
   imports: [
@@ -24,5 +26,11 @@ import { TasksModule } from './modules/tasks/tasks.module';
       synchronize: true
     }),
     UsersModule, CommonModule, AuthModule, ProjectsModule, TasksModule],
+  providers: [
+    {
+      provide: APP_FILTER,
+      useClass: HttpExceptionFilter,
+    }
+  ]
 })
 export class AppModule { }

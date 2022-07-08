@@ -29,8 +29,8 @@ export class ProjectsController {
     }
 
     @Get('/get_all_projects')
-    getAllProjects() {
-        return this.projectsService.getAllProjects();
+    getAllProjects(@GetUser() user: UserEntity) {
+        return this.projectsService.getAllProjects(user);
     }
 
     @Get('/get_one_project/:id')
@@ -81,12 +81,12 @@ export class ProjectsController {
         return this.projectsService.addMembersToProject(user_id, project_id)
     }
 
-    // @Get('/get_project_infor/:id')
+    @Get('/get_project_infor')
     // @UseGuards(AuthGuard(), RolesGuard)
     // @ApiBearerAuth()
-    // getProjectInfor(
-    //     @GetUser() user: UserEntity
-    // ) {
-    //     return this.projectsService.getProjectInfor(user);
-    // }
+    getProjectInfor(
+        @GetUser() user: UserEntity
+    ) {
+        return this.projectsService.getProjectInfor(user);
+    }
 }
