@@ -21,10 +21,10 @@ import { TasksService } from './tasks.service';
 export class TasksController {
     constructor(private readonly taskService: TasksService) { }
 
-    @Post('/create_task')
+    @Post('/create_task/:id')
     @ApiConsumes('multipart/form-data')
-    // @UseGuards(AuthGuard(), RolesGuard)
-    // @Roles(UsersRole.ADMIN, UsersRole.SUPERADMIN)
+    @UseGuards(AuthGuard(), RolesGuard)
+    @Roles(UsersRole.ADMIN, UsersRole.SUPERADMIN)
     @UseInterceptors(FileInterceptor('image',
         {
             storage: diskStorage({
@@ -60,6 +60,8 @@ export class TasksController {
     }
 
     @Patch('/update_task/:id')
+    @UseGuards(AuthGuard(), RolesGuard)
+    @Roles(UsersRole.ADMIN, UsersRole.SUPERADMIN)
     @ApiConsumes('multipart/form-data')
     @UseInterceptors(FileInterceptor('image',
         {

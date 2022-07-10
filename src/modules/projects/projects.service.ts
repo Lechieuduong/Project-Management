@@ -139,6 +139,18 @@ export class ProjectsService {
         return await projectQuery.getMany();
     }
 
+    // async kickUserFromProject(id: string) {
+    //     const kickUserQuery = createQueryBuilder()
+    //         .delete()
+    //         .from(ProjectEntity, 'Project')
+    //         .from(ProjectInviteMember, 'Project_Member')
+    //         .where('Project.members_id = Project_Member.user_id')
+    //         .andWhere('Project.members_id = :id', { id: id })
+    //         .execute()
+
+    //     return apiResponse(HttpStatus.OK, 'Kick member successful', { kickUserQuery });
+    // }
+
     /**
     * SELECT "Project".* FROM "Project",
     "Project Member", "User" where

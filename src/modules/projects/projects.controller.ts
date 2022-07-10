@@ -89,4 +89,15 @@ export class ProjectsController {
     ) {
         return this.projectsService.getProjectInfor(user);
     }
+
+
+    // @Delete('kick_user_from_project/:id')
+    // // @UseGuards(AuthGuard(), RolesGuard)
+    // // @ApiBearerAuth()
+    // // @Roles(UsersRole.ADMIN, UsersRole.SUPERADMIN)
+    // kickUserFromProject(
+    //     @Param('id') id: string
+    // ) {
+    //     return this.projectsService.kickUserFromProject(id);
+    // }
 }
