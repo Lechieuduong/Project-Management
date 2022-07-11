@@ -3,7 +3,7 @@ import { TaskEntity } from "src/modules/tasks/entity/task.entity";
 import { UserEntity } from "src/modules/users/entity/user.entity";
 import { UsersRole } from "src/modules/users/users.constants";
 import { BaseEntity, Column, CreateDateColumn, DeleteDateColumn, Entity, ManyToMany, ManyToOne, OneToMany, PrimaryGeneratedColumn, UpdateDateColumn } from "typeorm";
-import { ProjectStatus } from "../projects.constants";
+import { ProjectStatus, ProjectType } from "../projects.constants";
 import { ProjectInviteMember } from "./project-invite-member.entity";
 
 @Entity({ name: 'Project' })
@@ -25,6 +25,9 @@ export class ProjectEntity extends BaseEntity {
 
     @Column({ default: ProjectStatus.IN_PROGRESS })
     status: ProjectStatus;
+
+    @Column({ default: ProjectType.ODC })
+    type: ProjectType
 
     @Column()
     costs: number;

@@ -29,8 +29,8 @@ export class ProjectsController {
     }
 
     @Get('/get_all_projects')
-    getAllProjects(@GetUser() user: UserEntity) {
-        return this.projectsService.getAllProjects(user);
+    getAllProjects() {
+        return this.projectsService.getAllProjects();
     }
 
     @Get('/get_one_project/:id')
@@ -91,13 +91,13 @@ export class ProjectsController {
     }
 
 
-    // @Delete('kick_user_from_project/:id')
-    // // @UseGuards(AuthGuard(), RolesGuard)
-    // // @ApiBearerAuth()
-    // // @Roles(UsersRole.ADMIN, UsersRole.SUPERADMIN)
-    // kickUserFromProject(
-    //     @Param('id') id: string
-    // ) {
-    //     return this.projectsService.kickUserFromProject(id);
-    // }
+    @Delete('kick_user_from_project/:user_id')
+    // @UseGuards(AuthGuard(), RolesGuard)
+    // @ApiBearerAuth()
+    // @Roles(UsersRole.ADMIN, UsersRole.SUPERADMIN)
+    kickUserFromProject(
+        @Param('user_id') user_id: string
+    ) {
+        return this.projectsService.kickUserFromProject(user_id);
+    }
 }

@@ -10,3 +10,8 @@ export enum ProjectStatus {
     CANCELLED = 'Cancelled',
     BUG = 'Bug'
 }
+
+export enum ProjectType {
+    ODC = 'ODC', // Offshore Development Centre
+    PB = 'PB' // Project-Based Contract
+}

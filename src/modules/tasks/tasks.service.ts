@@ -5,17 +5,13 @@ import { createQueryBuilder, Repository } from 'typeorm';
 import { CreateTaskDto } from './dto/create-task.dto';
 import { UpdateTaskDto } from './dto/update-task.dto';
 import { TaskEntity } from './entity/task.entity';
-import { TaskMessage, TaskType } from './tasks.constants';
-import * as path from 'path'
+import { TaskType } from './tasks.constants';
 import * as fs from 'fs'
 import { UserEntity } from '../users/entity/user.entity';
 import { UsersRepository } from '../users/users.repository';
 import { ProjectInviteMember } from '../projects/entity/project-invite-member.entity';
-import { title } from 'process';
 import { ProjectStatus } from '../projects/projects.constants';
-import moment from 'moment';
 import { SendMailService } from 'src/common/send-mail/send-mail.service';
-import { find } from 'rxjs';
 import { ProjectsRepository } from '../projects/projects.repository';
 import { TasksRepository } from './tasks.repository';
 

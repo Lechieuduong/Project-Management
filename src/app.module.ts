@@ -10,6 +10,7 @@ import { APP_FILTER } from '@nestjs/core';
 import { HttpExceptionFilter } from './common/filter/http-exception.filter';
 import { ExcelService } from './excel/excel.service';
 import { ExcelController } from './excel/excel.controller';
+import { ReportModule } from './modules/report/report.module';
 
 @Module({
   imports: [
@@ -27,7 +28,7 @@ import { ExcelController } from './excel/excel.controller';
       autoLoadEntities: true,
       synchronize: true
     }),
-    UsersModule, CommonModule, AuthModule, ProjectsModule, TasksModule],
+    UsersModule, CommonModule, AuthModule, ProjectsModule, TasksModule, ReportModule],
   providers: [
     {
       provide: APP_FILTER,

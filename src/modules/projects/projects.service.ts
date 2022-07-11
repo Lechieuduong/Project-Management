@@ -33,14 +33,7 @@ export class ProjectsService {
         return apiResponse(HttpStatus.CREATED, 'Create project successful', { newProject })
     }
 
-    async getAllProjects(user: UserEntity) {
-        // const projectQuery = createQueryBuilder(ProjectEntity, 'Project')
-        //     .leftJoinAndSelect('Project.members_id', 'Project_Member')
-        //     .leftJoinAndSelect('Project_Member.user_id', 'User')
-        //     .where('User.id = :id', { id: user.id })
-
-
-        // return await projectQuery.getMany();
+    async getAllProjects() {
         return this.projectsRepository.find();
     }
 
@@ -128,6 +121,19 @@ export class ProjectsService {
         return apiResponse(HttpStatus.OK, 'Add members successful', {});
     }
 
+    async kickUserFromProject(user_id: string) {
+
+        const checkExist = await this.projectInviteMember.findOne(user_id);
+
+        if (!checkExist) {
+            throw new BadRequestException('This member does not exists!');
+        }
+
+        this.projectInviteMember.delete(user_id);
+
+        return apiResponse(HttpStatus.OK, 'Kick member successful', {});
+    }
+
     async getProjectInfor(user: UserEntity) {
         const projectQuery = createQueryBuilder(ProjectEntity, 'Project')
             .leftJoinAndSelect('Project.members_id', 'Project_Member')
@@ -138,18 +144,6 @@ export class ProjectsService {
 
         return await projectQuery.getMany();
     }
-
-    // async kickUserFromProject(id: string) {
-    //     const kickUserQuery = createQueryBuilder()
-    //         .delete()
-    //         .from(ProjectEntity, 'Project')
-    //         .from(ProjectInviteMember, 'Project_Member')
-    //         .where('Project.members_id = Project_Member.user_id')
-    //         .andWhere('Project.members_id = :id', { id: id })
-    //         .execute()
-
-    //     return apiResponse(HttpStatus.OK, 'Kick member successful', { kickUserQuery });
-    // }
 
     /**
     * SELECT "Project".* FROM "Project",

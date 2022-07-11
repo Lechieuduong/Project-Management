@@ -1,8 +1,10 @@
 import { Controller, Get, Header, Res } from '@nestjs/common';
+import { ApiTags } from '@nestjs/swagger';
 import { Response } from 'express';
 import { ExcelService } from './excel.service';
 
-@Controller('excel')
+@ApiTags('Excel')
+@Controller('excels')
 export class ExcelController {
     constructor(private excelService: ExcelService) { }
 
