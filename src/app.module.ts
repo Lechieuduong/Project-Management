@@ -8,8 +8,6 @@ import { ProjectsModule } from './modules/projects/projects.module';
 import { TasksModule } from './modules/tasks/tasks.module';
 import { APP_FILTER } from '@nestjs/core';
 import { HttpExceptionFilter } from './common/filter/http-exception.filter';
-import { ExcelService } from './excel/excel.service';
-import { ExcelController } from './excel/excel.controller';
 import { ReportModule } from './modules/reports/report.module';
 
 @Module({
@@ -34,8 +32,6 @@ import { ReportModule } from './modules/reports/report.module';
       provide: APP_FILTER,
       useClass: HttpExceptionFilter,
     },
-    ExcelService
   ],
-  controllers: [ExcelController]
 })
 export class AppModule { }

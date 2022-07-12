@@ -139,18 +139,10 @@ export class ProjectsService {
     async getProjectInfor(user: UserEntity) {
         const projectQuery = createQueryBuilder(ProjectEntity, 'Project')
             .leftJoinAndSelect('Project.members_id', 'Project_Member')
-            .leftJoinAndSelect('Project_Member.user_id', 'User')
+            .leftJoin('Project_Member.user_id', 'User')
             .leftJoinAndSelect('Project.tasks_id', 'Task')
             .where('User.id = :id', { id: user.id })
 
-
         return await projectQuery.getMany();
     }
-
-    /**
-    * SELECT "Project".* FROM "Project",
-    "Project Member", "User" where
-    "Project".id = "projectIdId" and
-    "userIdId" = "User".id
-     */
 }

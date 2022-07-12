@@ -9,7 +9,6 @@ import { ProjectReportEntity } from './entities/report.entity';
 import { TasksRepository } from '../tasks/tasks.repository';
 import { TaskReportEntity } from './entities/task-report';
 import { TaskReportRepository } from './repository/task-report.repository';
-import { ExcelService } from 'src/excel/excel.service';
 
 @Module({
   imports: [
