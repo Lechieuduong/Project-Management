@@ -56,7 +56,7 @@ export class ProjectsService {
         if (!checkProject)
             throw new NotFoundException(`Project with Id: ${id} is not found.`);
 
-        const { projectName, projectCode, startDate, endDate, costs } = updateProjectDto;
+        const { projectName, projectCode, startDate, endDate, costs, type } = updateProjectDto;
 
         checkProject.projectName = projectName;
 
@@ -67,6 +67,8 @@ export class ProjectsService {
         checkProject.endDate = endDate;
 
         checkProject.costs = costs;
+
+        checkProject.type = type;
 
         await this.projectsRepository.save(checkProject);
 

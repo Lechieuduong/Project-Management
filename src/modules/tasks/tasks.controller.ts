@@ -60,8 +60,8 @@ export class TasksController {
     }
 
     @Patch('/update_task/:id')
-    @UseGuards(AuthGuard(), RolesGuard)
-    @Roles(UsersRole.ADMIN, UsersRole.SUPERADMIN)
+    // @UseGuards(AuthGuard(), RolesGuard)
+    // @Roles(UsersRole.ADMIN, UsersRole.SUPERADMIN)
     @ApiConsumes('multipart/form-data')
     @UseInterceptors(FileInterceptor('image',
         {

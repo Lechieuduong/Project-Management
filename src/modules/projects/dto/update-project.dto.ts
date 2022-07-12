@@ -1,6 +1,7 @@
 import { ApiProperty } from "@nestjs/swagger";
 import { Type } from "class-transformer";
 import { IsDate, IsEnum, IsNotEmpty, IsOptional } from "class-validator";
+import { ProjectType } from "../projects.constants";
 
 export class UpdateProjectDto {
     @ApiProperty({ required: false })
@@ -31,4 +32,9 @@ export class UpdateProjectDto {
     @IsOptional()
     @IsNotEmpty()
     costs?: number;
+
+    @ApiProperty({ enum: ProjectType, required: false })
+    @IsOptional()
+    @IsEnum(ProjectType)
+    type: ProjectType;
 }

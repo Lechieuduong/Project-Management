@@ -1,18 +1,21 @@
-import { HttpStatus, Injectable } from '@nestjs/common';
+import { HttpStatus, Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { apiResponse } from 'src/common/api-response/apiresponse';
 import { Repository } from 'typeorm';
 import { ProjectInviteMember } from '../projects/entity/project-invite-member.entity';
 import { ProjectStatus } from '../projects/projects.constants';
 import { ProjectsRepository } from '../projects/projects.repository';
-import { CreateReportDto } from './dto/create-report.dto';
-import { ReportsRepository } from './report.repository';
+import { TasksRepository } from '../tasks/tasks.repository';
+import { CreateProjectReportDto } from './dto/create-report.dto';
+import { TaskReportEntity } from './entities/task-report';
+import { ProjectReportRepository } from './repository/report.repository';
+import { TaskReportRepository } from './repository/task-report.repository';
 
 @Injectable()
 export class ReportService {
     constructor(
-        @InjectRepository(ReportsRepository)
-        private readonly reportRepository: ReportsRepository,
+        @InjectRepository(ProjectReportRepository)
+        private readonly projectReportRepository: ProjectReportRepository,
 
         @InjectRepository(ProjectsRepository)
         private readonly projectRepository: ProjectsRepository,
@@ -20,9 +23,14 @@ export class ReportService {
         @InjectRepository(ProjectInviteMember)
         private readonly projectInviteMember: Repository<ProjectInviteMember>,
 
+        @InjectRepository(TasksRepository)
+        private readonly taskRepository: TasksRepository,
+
+        @InjectRepository(TaskReportRepository)
+        private readonly taskReportRepository: TaskReportRepository,
     ) { }
 
-    async createReport(createReportDto: CreateReportDto) {
+    async createReportForProject(createProjectReportDto: CreateProjectReportDto) {
         //const findProject = await this.projectRepository.findOne(project_id);
 
         const inProgressProject = await this.projectRepository.count({ status: ProjectStatus.IN_PROGRESS });
@@ -31,20 +39,51 @@ export class ReportService {
 
         const cancelledProject = await this.projectRepository.count({ status: ProjectStatus.CANCELLED })
 
-        const { numOfMember, totalMember } = createReportDto;
+        const { numOfMember, totalMember } = createProjectReportDto;
 
         const percent = numOfMember / totalMember * 100
 
-        const report = this.reportRepository.create({
+        const report = this.projectReportRepository.create({
             InProgress: inProgressProject,
             Done: doneProject,
             Cancelled: cancelledProject,
             PercentMemOfProject: percent
         })
 
-        await this.reportRepository.save(report);
+        await this.projectReportRepository.save(report);
 
         return apiResponse(HttpStatus.OK, 'Create Report successful', { report })
+    }
+
+    async createReportForTask(project_id: string) {
+        const findProject = await this.projectRepository.findOne(project_id);
+
+        const findProjectInTask = await this.taskRepository.findOne({ project_id: findProject });
+
+        if (findProjectInTask) {
+            const inProgressTask = await this.taskRepository.count({ status: ProjectStatus.IN_PROGRESS });
+
+            const doneTask = await this.taskRepository.count({ status: ProjectStatus.DONE });
+
+            const bugTask = await this.taskRepository.count({ status: ProjectStatus.BUG });
+
+            const numOfTask = await this.taskRepository.count();
+
+            const percent = bugTask / numOfTask * 100;
+
+            const taskReport = this.taskReportRepository.create({
+                InProgress: inProgressTask,
+                Done: doneTask,
+                Bug: bugTask,
+                PercentOfBug: percent
+            });
+
+            await this.taskReportRepository.save(taskReport);
+
+            return apiResponse(HttpStatus.CREATED, 'Create Task Report Succcessful', { taskReport })
+        } else {
+            throw new NotFoundException('No project found!');
+        }
     }
 
 

@@ -4,12 +4,23 @@ import { ReportController } from './report.controller';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { ProjectsRepository } from '../projects/projects.repository';
 import { ProjectInviteMember } from '../projects/entity/project-invite-member.entity';
-import { ReportsRepository } from './report.repository';
-import { ReportEntity } from './entity/report.entity';
+import { ProjectReportRepository } from './repository/report.repository';
+import { ProjectReportEntity } from './entities/report.entity';
+import { TasksRepository } from '../tasks/tasks.repository';
+import { TaskReportEntity } from './entities/task-report';
+import { TaskReportRepository } from './repository/task-report.repository';
 
 @Module({
   imports: [
-    TypeOrmModule.forFeature([ProjectsRepository, ProjectInviteMember, ReportsRepository, ReportEntity])
+    TypeOrmModule.forFeature([
+      ProjectsRepository,
+      ProjectInviteMember,
+      ProjectReportEntity,
+      ProjectReportRepository,
+      TasksRepository,
+      TaskReportEntity,
+      TaskReportRepository
+    ])
   ],
   providers: [ReportService],
   controllers: [ReportController]
