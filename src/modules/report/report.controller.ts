@@ -26,13 +26,23 @@ export class ReportController {
         return this.reportService.createReportForTask(project_id);
     }
 
-    @Get('/download/:id')
+    @Get('/download_project_report/:id')
     @Header('Content-Type', 'text/xlsx')
-    async downloadProjectReport(
+    async exportProjectReport(
         @Res() res: Response,
         @Param('id') id: string
     ) {
-        let result = await this.reportService.downloadProjectExcel(id)
+        let result = await this.reportService.exportProjectReport(id)
+        res.download(`${result}`)
+    }
+
+    @Get('/download_task_report/:id')
+    @Header('Content-Type', 'text/xlsx')
+    async exportTaskReport(
+        @Res() res: Response,
+        @Param('id') id: string
+    ) {
+        let result = await this.reportService.exportTaskReport(id)
         res.download(`${result}`)
     }
 }

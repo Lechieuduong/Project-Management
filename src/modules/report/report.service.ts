@@ -111,7 +111,7 @@ export class ReportService {
 
     }
 
-    async downloadProjectExcel(projectReportID: string) {
+    async exportProjectReport(projectReportID: string) {
         const projectReport = await this.projectReportRepository.findOne(projectReportID);
         // http://localhost:9000/report/download/54578629-2e92-4a80-8fe8-2c380bf2800f
 
@@ -120,7 +120,7 @@ export class ReportService {
         let sheet = book.addWorksheet('sheet1')
 
         sheet.columns = [
-            { header: 'Id', key: 'id', width: 50 },
+            { header: 'ID', key: 'id', width: 50 },
             { header: 'InProgress', key: 'inprogress', width: 10 },
             { header: 'Done', key: 'done', width: 10 },
             { header: 'Cancelled', key: 'cancelled', width: 10 },
@@ -128,6 +128,39 @@ export class ReportService {
             { header: 'PercentMemOfProject', key: 'percentmemofproject', width: 10 },
         ]
         sheet.addRow({ id: projectReport.id, inprogress: projectReport.InProgress, done: projectReport.Done, cancelled: projectReport.Cancelled, avgcost: projectReport.AVGCost, percentmemofproject: projectReport.PercentMemOfProject });
+
+        let File = await new Promise((resolve, reject) => {
+            tmp.file({ discardDescriptor: true, prefix: `ReportSheet`, postfix: '.xlsx', mode: parseInt('0600', 8) }, async (err, file) => {
+                if (err)
+                    throw new BadRequestException(err);
+
+                book.xlsx.writeFile(file).then(_ => {
+                    resolve(file)
+                }).catch(err => {
+                    throw new BadRequestException(err)
+                })
+            })
+        })
+
+        return File;
+    }
+
+    async exportTaskReport(taskReportID: string) {
+        const taskReport = await this.taskReportRepository.findOne(taskReportID);
+
+        let book = new Workbook();
+
+        let sheet = book.addWorksheet('sheet1')
+
+        sheet.columns = [
+            { header: 'ID', key: 'id', width: 50 },
+            { header: 'InProgress', key: 'inprogress', width: 10 },
+            { header: 'Done', key: 'done', width: 10 },
+            { header: 'Bug', key: 'bug', width: 10 },
+            { header: 'PercentOfBug', key: 'percentofbug', width: 30 },
+        ]
+
+        sheet.addRow({ id: taskReport.id, inprogress: taskReport.InProgress, done: taskReport.Done, bug: taskReport.Bug, percentofbug: taskReport.PercentOfBug });
 
         let File = await new Promise((resolve, reject) => {
             tmp.file({ discardDescriptor: true, prefix: `ReportSheet`, postfix: '.xlsx', mode: parseInt('0600', 8) }, async (err, file) => {
