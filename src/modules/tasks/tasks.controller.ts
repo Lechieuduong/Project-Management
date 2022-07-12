@@ -23,8 +23,8 @@ export class TasksController {
 
     @Post('/create_task/:id')
     @ApiConsumes('multipart/form-data')
-    @UseGuards(AuthGuard(), RolesGuard)
-    @Roles(UsersRole.ADMIN, UsersRole.SUPERADMIN)
+    // @UseGuards(AuthGuard(), RolesGuard)
+    // @Roles(UsersRole.ADMIN, UsersRole.SUPERADMIN)
     @UseInterceptors(FileInterceptor('image',
         {
             storage: diskStorage({

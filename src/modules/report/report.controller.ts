@@ -28,11 +28,11 @@ export class ReportController {
 
     @Get('/download/:id')
     @Header('Content-Type', 'text/xlsx')
-    async downloadReport(
+    async downloadProjectReport(
         @Res() res: Response,
         @Param('id') id: string
     ) {
-        let result = await this.reportService.downloadExcel(id)
+        let result = await this.reportService.downloadProjectExcel(id)
         res.download(`${result}`)
     }
 }

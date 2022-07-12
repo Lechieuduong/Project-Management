@@ -2,7 +2,7 @@ import { BadRequestException, HttpStatus, Injectable, NotFoundException } from '
 import { InjectRepository } from '@nestjs/typeorm';
 import { Workbook } from 'exceljs';
 import { apiResponse } from 'src/common/api-response/apiresponse';
-import { Repository } from 'typeorm';
+import { createQueryBuilder, Repository, SelectQueryBuilder } from 'typeorm';
 import { ProjectInviteMember } from '../projects/entity/project-invite-member.entity';
 import { ProjectStatus } from '../projects/projects.constants';
 import { ProjectsRepository } from '../projects/projects.repository';
@@ -12,6 +12,8 @@ import { ProjectReportEntity } from './entities/report.entity';
 import { ProjectReportRepository } from './repository/report.repository';
 import { TaskReportRepository } from './repository/task-report.repository';
 import * as tmp from 'tmp';
+import { TaskEntity } from '../tasks/entity/task.entity';
+import { ProjectEntity } from '../projects/entity/project.entity';
 
 
 @Injectable()
@@ -59,16 +61,30 @@ export class ReportService {
     }
 
     async createReportForTask(project_id: string) {
+
+        // const projectQuery = createQueryBuilder(TaskEntity, 'Task')
+        //     .select('COUNT(Task.status)')
+        //     .innerJoin(ProjectEntity, 'Project', 'Task.project_id = Project.id')
+        //     .where('Task.status = :status', { status: ProjectStatus.BUG })
+
         const findProject = await this.projectRepository.findOne(project_id);
 
         const findProjectInTask = await this.taskRepository.findOne({ project_id: findProject });
 
         if (findProjectInTask) {
-            const inProgressTask = await this.taskRepository.count({ status: ProjectStatus.IN_PROGRESS });
 
-            const doneTask = await this.taskRepository.count({ status: ProjectStatus.DONE });
+            const inProgressTask = await createQueryBuilder(TaskEntity, 'Task')
+                .innerJoin(ProjectEntity, 'Project', 'Task.project_id = Project.id')
+                .where('Task.status = :status', { status: ProjectStatus.IN_PROGRESS }).getCount();
 
-            const bugTask = await this.taskRepository.count({ status: ProjectStatus.BUG });
+            const doneTask = await createQueryBuilder(TaskEntity, 'Task')
+                .innerJoin(ProjectEntity, 'Project', 'Task.project_id = Project.id')
+                .where('Task.status = :status', { status: ProjectStatus.DONE }).getCount();
+
+            const bugTask = await createQueryBuilder(TaskEntity, 'Task')
+                .innerJoin(ProjectEntity, 'Project', 'Task.project_id = Project.id')
+                .where('Task.status = :status', { status: ProjectStatus.BUG }).getCount();
+
 
             const numOfTask = await this.taskRepository.count();
 
@@ -87,9 +103,15 @@ export class ReportService {
         } else {
             throw new NotFoundException('No project found!');
         }
+
+        /**select count(public."Task".status)
+        from public."Task", public."Project"
+        where "projectIdId" = public."Project".id
+        and public."Task".status LIKE 'In Progress' */
+
     }
 
-    async downloadExcel(projectReportID: string) {
+    async downloadProjectExcel(projectReportID: string) {
         const projectReport = await this.projectReportRepository.findOne(projectReportID);
         // http://localhost:9000/report/download/54578629-2e92-4a80-8fe8-2c380bf2800f
 
