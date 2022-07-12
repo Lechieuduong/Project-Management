@@ -20,8 +20,6 @@ export class ExcelService {
 
         let sheet = book.addWorksheet('sheet1');
 
-        rows.unshift(Object.keys(data[0]))
-
         sheet.addRows(rows);
 
         let File = await new Promise((resolve, reject) => {

@@ -1,5 +1,7 @@
-import { Body, Controller, Param, Post } from '@nestjs/common';
+import { Body, Controller, Get, Header, Param, Post, Res } from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
+import { Response } from 'express';
+import { ExcelService } from 'src/excel/excel.service';
 import { CreateProjectReportDto } from './dto/create-report.dto';
 import { ReportService } from './report.service';
 
@@ -7,7 +9,8 @@ import { ReportService } from './report.service';
 @Controller('report')
 export class ReportController {
     constructor(
-        private readonly reportService: ReportService) { }
+        private readonly reportService: ReportService,
+    ) { }
 
     @Post('/create_project_report')
     createProjectReport(
@@ -21,5 +24,15 @@ export class ReportController {
         @Param('project-id') project_id: string
     ) {
         return this.reportService.createReportForTask(project_id);
+    }
+
+    @Get('/download/:id')
+    @Header('Content-Type', 'text/xlsx')
+    async downloadReport(
+        @Res() res: Response,
+        @Param('id') id: string
+    ) {
+        let result = await this.reportService.downloadExcel(id)
+        res.download(`${result}`)
     }
 }
