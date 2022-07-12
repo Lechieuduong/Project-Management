@@ -91,22 +91,12 @@ export class ReportService {
 
     async downloadExcel(projectReportID: string) {
         const projectReport = await this.projectReportRepository.findOne(projectReportID);
-        // const data = [];
-        // data.push(projectReport.id, projectReport.InProgress, projectReport.Done, projectReport.Cancelled, projectReport.PercentMemOfProject)
-
-        // const rows = [];
-
-        // //rows.push(projectReport.id.toString, projectReport.InProgress, projectReport.Done, projectReport.Cancelled, projectReport.PercentMemOfProject);
-
-        // data.forEach(doc => {
-        //     rows.push(Object.values(doc))
-        // }) http://localhost:9000/report/download/54578629-2e92-4a80-8fe8-2c380bf2800f
+        // http://localhost:9000/report/download/54578629-2e92-4a80-8fe8-2c380bf2800f
 
         let book = new Workbook();
 
         let sheet = book.addWorksheet('sheet1')
 
-        // rows.unshift(Object.keys(data[2]));
         sheet.columns = [
             { header: 'Id', key: 'id', width: 50 },
             { header: 'InProgress', key: 'inprogress', width: 10 },
