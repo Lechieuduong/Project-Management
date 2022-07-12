@@ -7,7 +7,6 @@ import { ProjectStatus } from '../projects/projects.constants';
 import { ProjectsRepository } from '../projects/projects.repository';
 import { TasksRepository } from '../tasks/tasks.repository';
 import { CreateProjectReportDto } from './dto/create-report.dto';
-import { TaskReportEntity } from './entities/task-report';
 import { ProjectReportRepository } from './repository/report.repository';
 import { TaskReportRepository } from './repository/task-report.repository';
 
