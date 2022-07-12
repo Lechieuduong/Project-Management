@@ -8,7 +8,6 @@ import { ProjectStatus } from '../projects/projects.constants';
 import { ProjectsRepository } from '../projects/projects.repository';
 import { TasksRepository } from '../tasks/tasks.repository';
 import { CreateProjectReportDto } from './dto/create-report.dto';
-import { ProjectReportEntity } from './entities/report.entity';
 import { ProjectReportRepository } from './repository/report.repository';
 import { TaskReportRepository } from './repository/task-report.repository';
 import * as tmp from 'tmp';
@@ -62,11 +61,6 @@ export class ReportService {
 
     async createReportForTask(project_id: string) {
 
-        // const projectQuery = createQueryBuilder(TaskEntity, 'Task')
-        //     .select('COUNT(Task.status)')
-        //     .innerJoin(ProjectEntity, 'Project', 'Task.project_id = Project.id')
-        //     .where('Task.status = :status', { status: ProjectStatus.BUG })
-
         const findProject = await this.projectRepository.findOne(project_id);
 
         const findProjectInTask = await this.taskRepository.findOne({ project_id: findProject });
@@ -103,17 +97,10 @@ export class ReportService {
         } else {
             throw new NotFoundException('No project found!');
         }
-
-        /**select count(public."Task".status)
-        from public."Task", public."Project"
-        where "projectIdId" = public."Project".id
-        and public."Task".status LIKE 'In Progress' */
-
     }
 
     async exportProjectReport(projectReportID: string) {
         const projectReport = await this.projectReportRepository.findOne(projectReportID);
-        // http://localhost:9000/report/download/54578629-2e92-4a80-8fe8-2c380bf2800f
 
         let book = new Workbook();
 

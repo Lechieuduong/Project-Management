@@ -1,8 +1,7 @@
 import { Exclude } from "class-transformer";
 import { TaskEntity } from "src/modules/tasks/entity/task.entity";
 import { UserEntity } from "src/modules/users/entity/user.entity";
-import { UsersRole } from "src/modules/users/users.constants";
-import { BaseEntity, Column, CreateDateColumn, DeleteDateColumn, Entity, ManyToMany, ManyToOne, OneToMany, PrimaryGeneratedColumn, UpdateDateColumn } from "typeorm";
+import { BaseEntity, Column, CreateDateColumn, DeleteDateColumn, Entity, ManyToOne, OneToMany, PrimaryGeneratedColumn, UpdateDateColumn } from "typeorm";
 import { ProjectStatus, ProjectType } from "../projects.constants";
 import { ProjectInviteMember } from "./project-invite-member.entity";
 
