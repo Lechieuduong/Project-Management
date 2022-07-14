@@ -128,17 +128,15 @@ export class TasksService {
         return apiResponse(HttpStatus.OK, 'Delete successful.', {});
     }
 
-    async assignTaskForUser(user_id: string, task_id: string, project_id: string) {
+    async assignTaskForUser(user_id: string, task_id: string) {
         const findUser = await this.userRepository.findOne(user_id);
         const findTask = await this.tasksRepository.findOne(task_id);
-        const findProject = await this.projectRepository.findOne(project_id);
         if (findTask.assignee_id.length >= 1) {
             return apiResponse(HttpStatus.BAD_REQUEST, 'Only assign for 1 people', {});
         } else {
             const assignUser = this.projectInviteMember.create({
                 user_id: findUser,
-                task_id: findTask,
-                project_id: findProject
+                task_id: findTask
             })
 
             this.projectInviteMember.save(assignUser);
