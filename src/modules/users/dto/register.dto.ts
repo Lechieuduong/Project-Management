@@ -28,7 +28,7 @@ export class RegisterDto {
     })
     password: string;
 
-    @IsNotEmpty()
-    @IsIn([UsersRole.SUPERADMIN, UsersRole.ADMIN, UsersRole.USER])
-    role: UsersRole;
+    // @IsNotEmpty()
+    // @IsIn([UsersRole.SUPERADMIN, UsersRole.ADMIN, UsersRole.USER])
+    // role: UsersRole;
 }

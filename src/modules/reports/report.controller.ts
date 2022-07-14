@@ -5,7 +5,7 @@ import { CreateProjectReportDto } from './dto/create-report.dto';
 import { ReportService } from './report.service';
 
 @ApiTags('Report')
-@Controller('report')
+@Controller('reports')
 export class ReportController {
     constructor(
         private readonly reportService: ReportService,

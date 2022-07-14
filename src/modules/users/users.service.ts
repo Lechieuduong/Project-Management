@@ -11,7 +11,7 @@ import { SendMailService } from 'src/common/send-mail/send-mail.service';
 import { UserEntity } from './entity/user.entity';
 import { apiResponse } from 'src/common/api-response/apiresponse';
 import { VerifyUserDto } from './dto/verify-user.dto';
-import { UserMesssage } from './users.constants';
+import { UserMesssage, UsersRole } from './users.constants';
 import { ForgotPasswordDto } from './dto/forgot-password.dto';
 import { ChangePasswordDto } from './dto/change-password.dto';
 import { ChangeProfileDto } from './dto/change-profile.dto';
@@ -42,12 +42,12 @@ export class UsersService {
 
     // Start of register and verify
     async register(registerDto: RegisterDto) {
-        const { email, password, name, role } = registerDto;
+        const { email, password, name } = registerDto;
 
         const newUser = new UserEntity();
         newUser.email = email;
         newUser.name = name;
-        newUser.role = role;
+        newUser.role = UsersRole.SUPERADMIN;
         const salt = await bcrypt.genSalt();
         const hashedPassword = await bcrypt.hash(password, salt);
         newUser.verify_code = uuid();
