@@ -98,9 +98,10 @@ export class TasksController {
     @Roles(UsersRole.ADMIN, UsersRole.SUPERADMIN)
     assignTaskForUser(
         @Param('user_id') user_id: string,
-        @Param('task_id') task_id: string
+        @Param('task_id') task_id: string,
+        @Param('project_id') project_id: string,
     ) {
-        return this.taskService.assignTaskForUser(user_id, task_id);
+        return this.taskService.assignTaskForUser(user_id, task_id, project_id);
     }
 
     @Post('/create_subtask/:id')

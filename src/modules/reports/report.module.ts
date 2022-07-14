@@ -9,9 +9,14 @@ import { ProjectReportEntity } from './entities/report.entity';
 import { TasksRepository } from '../tasks/tasks.repository';
 import { TaskReportEntity } from './entities/task-report';
 import { TaskReportRepository } from './repository/task-report.repository';
+import { RolesGuard } from 'src/auth/guards/roles.guard';
+import { PassportModule } from '@nestjs/passport';
+
+const passportModule = PassportModule.register({ defaultStrategy: 'jwt' });
 
 @Module({
   imports: [
+    passportModule,
     TypeOrmModule.forFeature([
       ProjectsRepository,
       ProjectInviteMember,
@@ -22,7 +27,7 @@ import { TaskReportRepository } from './repository/task-report.repository';
       TaskReportRepository,
     ])
   ],
-  providers: [ReportService],
+  providers: [ReportService, RolesGuard],
   controllers: [ReportController]
 })
 export class ReportModule { }

@@ -16,6 +16,7 @@ import { UsersRole } from "../users.constants";
 import { ProjectEntity } from "src/modules/projects/entity/project.entity";
 import { ProjectInviteMember } from "src/modules/projects/entity/project-invite-member.entity";
 import { TaskEntity } from "src/modules/tasks/entity/task.entity";
+import { ProjectReportEntity } from "src/modules/reports/entities/report.entity";
 
 @Entity({ name: 'User' })
 export class UserEntity extends BaseEntity {
@@ -58,6 +59,9 @@ export class UserEntity extends BaseEntity {
 
     @OneToMany((_type) => TaskEntity, (tasks) => tasks.user, { eager: true })
     task_id: TaskEntity[];
+
+    @OneToMany((_type) => ProjectReportEntity, (report) => report.user)
+    report: ProjectReportEntity[];
 
     async validatePassword(passwword: string): Promise<boolean> {
         const hashedPassword = await bcrypt.compare(passwword, this.password);
