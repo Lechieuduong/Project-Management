@@ -52,6 +52,8 @@ export class TasksService {
 
         newTask.project_id = findProject;
 
+        await this.assignTaskForUser(user.id, newTask.id)
+
         await this.tasksRepository.save(newTask);
 
         return apiResponse(HttpStatus.OK, 'Create task successful', {});
