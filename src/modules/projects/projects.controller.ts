@@ -82,8 +82,6 @@ export class ProjectsController {
     }
 
     @Get('/get_project_infor')
-    // @UseGuards(AuthGuard(), RolesGuard)
-    // @ApiBearerAuth()
     getProjectInfor(
         @GetUser() user: UserEntity
     ) {
@@ -92,9 +90,9 @@ export class ProjectsController {
 
 
     @Delete('kick_user_from_project/:user_id')
-    // @UseGuards(AuthGuard(), RolesGuard)
-    // @ApiBearerAuth()
-    // @Roles(UsersRole.ADMIN, UsersRole.SUPERADMIN)
+    @UseGuards(AuthGuard(), RolesGuard)
+    @ApiBearerAuth()
+    @Roles(UsersRole.ADMIN, UsersRole.SUPERADMIN)
     kickUserFromProject(
         @Param('user_id') user_id: string
     ) {

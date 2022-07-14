@@ -15,16 +15,16 @@ import { TaskEntity } from './entity/task.entity';
 import { TasksService } from './tasks.service';
 
 @ApiTags('Task')
-//@ApiBearerAuth()
-//@UseGuards(AuthGuard())
+@ApiBearerAuth()
+@UseGuards(AuthGuard(), RolesGuard)
 @Controller('tasks')
 export class TasksController {
     constructor(private readonly taskService: TasksService) { }
 
     @Post('/create_task/:id')
     @ApiConsumes('multipart/form-data')
-    // @UseGuards(AuthGuard(), RolesGuard)
-    // @Roles(UsersRole.ADMIN, UsersRole.SUPERADMIN)
+    @UseGuards(AuthGuard(), RolesGuard)
+    @Roles(UsersRole.ADMIN, UsersRole.SUPERADMIN)
     @UseInterceptors(FileInterceptor('image',
         {
             storage: diskStorage({
@@ -60,9 +60,9 @@ export class TasksController {
     }
 
     @Patch('/update_task/:id')
-    // @UseGuards(AuthGuard(), RolesGuard)
-    // @Roles(UsersRole.ADMIN, UsersRole.SUPERADMIN)
     @ApiConsumes('multipart/form-data')
+    @UseGuards(AuthGuard(), RolesGuard)
+    @Roles(UsersRole.ADMIN, UsersRole.SUPERADMIN)
     @UseInterceptors(FileInterceptor('image',
         {
             storage: diskStorage({
@@ -94,7 +94,8 @@ export class TasksController {
     }
 
     @Post('/assign_user_into_task/:user_id&:task_id')
-    @ApiBearerAuth()
+    @UseGuards(AuthGuard(), RolesGuard)
+    @Roles(UsersRole.ADMIN, UsersRole.SUPERADMIN)
     assignTaskForUser(
         @Param('user_id') user_id: string,
         @Param('task_id') task_id: string
@@ -104,8 +105,6 @@ export class TasksController {
 
     @Post('/create_subtask/:id')
     @ApiConsumes('multipart/form-data')
-    // @UseGuards(AuthGuard(), RolesGuard)
-    // @Roles(UsersRole.ADMIN, UsersRole.SUPERADMIN)
     @UseInterceptors(FileInterceptor('image',
         {
             storage: diskStorage({

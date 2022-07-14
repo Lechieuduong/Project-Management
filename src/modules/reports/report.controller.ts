@@ -1,10 +1,16 @@
-import { Body, Controller, Get, Header, Param, Post, Res } from '@nestjs/common';
-import { ApiTags } from '@nestjs/swagger';
+import { Body, Controller, Get, Header, Param, Post, Res, UseGuards } from '@nestjs/common';
+import { AuthGuard } from '@nestjs/passport';
+import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 import { Response } from 'express';
+import { RolesGuard } from 'src/auth/guards/roles.guard';
+import { Roles } from '../users/decorators/user-roles.decorator';
+import { UsersRole } from '../users/users.constants';
 import { CreateProjectReportDto } from './dto/create-report.dto';
 import { ReportService } from './report.service';
 
 @ApiTags('Report')
+@ApiBearerAuth()
+@UseGuards(AuthGuard(), RolesGuard)
 @Controller('reports')
 export class ReportController {
     constructor(
@@ -12,6 +18,7 @@ export class ReportController {
     ) { }
 
     @Post('/create_project_report')
+    @Roles(UsersRole.ADMIN, UsersRole.SUPERADMIN)
     createProjectReport(
         @Body() createProjectReportDto: CreateProjectReportDto
     ) {
@@ -19,6 +26,7 @@ export class ReportController {
     }
 
     @Post('create_task_report/:id')
+    @Roles(UsersRole.ADMIN, UsersRole.SUPERADMIN)
     createTaskReport(
         @Param('project-id') project_id: string
     ) {
@@ -26,6 +34,7 @@ export class ReportController {
     }
 
     @Get('/download_project_report/:id')
+    @Roles(UsersRole.ADMIN, UsersRole.SUPERADMIN)
     @Header('Content-Type', 'text/xlsx')
     async exportProjectReport(
         @Res() res: Response,
@@ -36,6 +45,7 @@ export class ReportController {
     }
 
     @Get('/download_task_report/:id')
+    @Roles(UsersRole.ADMIN, UsersRole.SUPERADMIN)
     @Header('Content-Type', 'text/xlsx')
     async exportTaskReport(
         @Res() res: Response,
