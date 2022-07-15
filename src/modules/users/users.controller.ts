@@ -52,6 +52,8 @@ export class UsersController {
     }
 
     @Post('/change_password')
+    @ApiBearerAuth()
+    @UseGuards(AuthGuard())
     sendMailChangePassword(@Query('email') email: string) {
         return this.userService.sendMailChangePassword(email);
     }
