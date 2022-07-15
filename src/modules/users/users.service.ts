@@ -59,7 +59,7 @@ export class UsersService {
 
             this.sendMailVerifyUser(email);
 
-            return apiResponse(HttpStatus.OK, 'Create user successfully. Please check your email to verify user.', {})
+            return apiResponse(HttpStatus.CREATED, 'Create user successfully. Please check your email to verify user.', {})
 
         } catch (error) {
 
@@ -95,12 +95,12 @@ export class UsersService {
         let url =
             process.env.DOMAIN + '/users/verified?email=' + email + '&verify_code=' + user.verify_code;
 
-        const res = await this.sendMailService.sendMailVerify(url, email);
+        this.sendMailService.sendMailVerify(url, email);
 
         user.updated_at = new Date(currentDate);
         await user.save();
 
-        return apiResponse(HttpStatus.OK, res.response, {})
+        return apiResponse(HttpStatus.OK, 'Reset password successful', {})
     }
 
     async verifyUser(verifyUserDto: VerifyUserDto) {

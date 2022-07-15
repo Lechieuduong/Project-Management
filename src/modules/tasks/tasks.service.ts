@@ -58,7 +58,7 @@ export class TasksService {
 
         findProject.tasks_id.push(newTask);
 
-        return apiResponse(HttpStatus.OK, 'Create task successful', {});
+        return apiResponse(HttpStatus.CREATED, 'Create task successful', {});
 
     }
 
@@ -171,9 +171,9 @@ export class TasksService {
         }
 
         const url = process.env.DOMAIN + 'tasks/task_has_bug?email=' + email;
-        const res = await this.sendMailService.sendMailAssignMemberIfTaskHasBug(url, email)
+        this.sendMailService.sendMailAssignMemberIfTaskHasBug(url, email)
 
-        return apiResponse(HttpStatus.OK, res.response, {})
+        return apiResponse(HttpStatus.OK, 'Your task has a bug', {})
     }
 
     async createSubTask(
@@ -196,7 +196,7 @@ export class TasksService {
 
         await this.tasksRepository.save(newSubTask);
 
-        return apiResponse(HttpStatus.OK, 'Create sub-task successful', {});
+        return apiResponse(HttpStatus.CREATED, 'Create sub-task successful', {});
     }
 
 }

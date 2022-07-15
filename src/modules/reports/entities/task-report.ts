@@ -1,4 +1,5 @@
-import { BaseEntity, Column, Entity, PrimaryGeneratedColumn } from "typeorm";
+import { TaskEntity } from "src/modules/tasks/entity/task.entity";
+import { BaseEntity, Column, Entity, ManyToOne, PrimaryGeneratedColumn } from "typeorm";
 
 @Entity({ name: 'Task_Report' })
 export class TaskReportEntity extends BaseEntity {
@@ -16,4 +17,9 @@ export class TaskReportEntity extends BaseEntity {
 
     @Column({ type: 'float' })
     PercentOfBug: number;
+
+    @ManyToOne((_type) => TaskEntity)
+    task: TaskEntity
+
+
 }
