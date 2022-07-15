@@ -232,13 +232,13 @@ export class UsersService {
 
         const url = process.env.DOMAIN + '/users/change_password?email=' + email + '&verify_code=' + user.verify_code;
 
-        const res = await this.sendMailService.sendMailChangePassword(url, email);
+        this.sendMailService.sendMailChangePassword(url, email);
 
         user.updated_at = new Date();
 
         await user.save();
 
-        return apiResponse(HttpStatus.OK, res.response, {});
+        return apiResponse(HttpStatus.OK, 'Check your email to take verify code', {});
     }
 
     async changeProfile(
