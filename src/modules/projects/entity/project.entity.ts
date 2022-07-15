@@ -48,7 +48,7 @@ export class ProjectEntity extends BaseEntity {
     @Exclude({ toPlainOnly: true })
     user: UserEntity;
 
-    @OneToMany((_type) => TaskEntity, (tasks) => tasks.project_id, { eager: false })
+    @OneToMany((_type) => TaskEntity, (tasks) => tasks.project_id, { eager: true })
     tasks_id: TaskEntity[];
 
     @OneToMany((_type) => ProjectReportEntity, (report) => report.project)

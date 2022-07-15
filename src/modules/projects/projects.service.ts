@@ -142,6 +142,7 @@ export class ProjectsService {
             .leftJoin('Project_Member.user_id', 'User')
             .leftJoinAndSelect('Project.tasks_id', 'Task')
             .where('User.id = :id', { id: user.id })
+        delete user.password;
 
         return await projectQuery.getMany();
     }
