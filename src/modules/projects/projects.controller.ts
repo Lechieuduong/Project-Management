@@ -38,7 +38,7 @@ export class ProjectsController {
         return this.projectsService.getProjectById(id);
     }
 
-    @Patch('/update_project/:id/admin')
+    @Patch('/update_project/:id')
     @UseGuards(RolesGuard)
     @ApiBearerAuth()
     @Roles(UsersRole.ADMIN, UsersRole.SUPERADMIN)
