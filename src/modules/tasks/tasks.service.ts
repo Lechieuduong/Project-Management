@@ -161,7 +161,7 @@ export class TasksService {
             throw new NotFoundException(`User have email: ${email} is not found`);
 
         if (!user.verified)
-            throw new BadRequestException('You have to register or veried your account');
+            throw new BadRequestException('You have to register or verified your account');
 
         const time = new Date().getTime() - user.updated_at.getTime();
         const getTimeSendMail = time / (100 * 60 * 5);
