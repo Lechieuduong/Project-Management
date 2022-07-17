@@ -20,6 +20,4 @@ export class TaskReportEntity extends BaseEntity {
 
     @ManyToOne((_type) => TaskEntity)
     task: TaskEntity
-
-
 }
