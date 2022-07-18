@@ -39,7 +39,7 @@ export class ProjectEntity extends BaseEntity {
     updated_at: Date;
 
     @DeleteDateColumn()
-    deleted_column?: Date;
+    deleted_at?: Date;
 
     @OneToMany((_type) => ProjectInviteMember, (inviteUser) => inviteUser.project_id, { eager: true })
     members_id: ProjectInviteMember[];
