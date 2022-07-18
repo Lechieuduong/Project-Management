@@ -4,7 +4,7 @@ import { Workbook } from 'exceljs';
 import { apiResponse } from 'src/common/api-response/apiresponse';
 import { createQueryBuilder, Repository, SelectQueryBuilder } from 'typeorm';
 import { ProjectInviteMember } from '../projects/entity/project-invite-member.entity';
-import { ProjectStatus } from '../projects/projects.constants';
+import { ProjectStatus, ProjectType } from '../projects/projects.constants';
 import { ProjectsRepository } from '../projects/projects.repository';
 import { TasksRepository } from '../tasks/tasks.repository';
 import { CreateProjectReportDto } from './dto/create-report.dto';
@@ -44,14 +44,36 @@ export class ReportService {
 
         const { numOfMember, totalMember } = createProjectReportDto;
 
-        const percent = numOfMember / totalMember * 100
+        const percent = numOfMember / totalMember * 100;
+
+        const memberOfODC = await createQueryBuilder(ProjectInviteMember, 'Project_Member')
+            .innerJoin(ProjectEntity, 'Project', 'Project_Member.project_id = Project.id')
+            .where('Project.type = :type', { type: ProjectType.ODC }).getCount();
+
+        const memberOfPB = await createQueryBuilder(ProjectInviteMember, 'Project_Member')
+            .innerJoin(ProjectEntity, 'Project', 'Project_Member.project_id = Project.id')
+            .where('Project.type = :type', { type: ProjectType.PB }).getCount();
+
+        const sumOfODC = await createQueryBuilder(ProjectEntity, 'Project')
+            .select('SUM(Project.costs)', '')
+            .where('Project.type = :type', { type: ProjectType.ODC }).getRawOne()
+
+        const sumOfPB = await createQueryBuilder(ProjectEntity, 'Project')
+            .select('SUM(Project.costs)', '')
+            .where('Project.type = :type', { type: ProjectType.PB }).getRawOne()
+
+
+        const AVGODC = sumOfODC.sum - (memberOfODC * 50) - (sumOfODC.sum / 50);
+
+        const AVGPB = sumOfPB.sum - (memberOfPB * 50) - (sumOfPB.sum / 60) * 4;
 
         const report = this.projectReportRepository.create({
             InProgress: inProgressProject,
             Done: doneProject,
             Cancelled: cancelledProject,
             PercentMemOfProject: percent,
-            AVGCost: 0
+            AVGCostOfODCProject: AVGODC,
+            AVGCostOfPBProject: AVGPB
         })
 
         await this.projectReportRepository.save(report);
@@ -111,10 +133,11 @@ export class ReportService {
             { header: 'InProgress', key: 'inprogress', width: 10 },
             { header: 'Done', key: 'done', width: 10 },
             { header: 'Cancelled', key: 'cancelled', width: 10 },
-            { header: 'AVGCost', key: 'avgcost', width: 10 },
+            { header: 'AVGCost Of ODC Project', key: 'avgcostofodcproject', width: 50 },
+            { header: 'AVGCost Of PB Project', key: 'avgcostofpbproject', width: 50 },
             { header: 'PercentMemOfProject', key: 'percentmemofproject', width: 10 },
         ]
-        sheet.addRow({ id: projectReport.id, inprogress: projectReport.InProgress, done: projectReport.Done, cancelled: projectReport.Cancelled, avgcost: projectReport.AVGCost, percentmemofproject: projectReport.PercentMemOfProject });
+        sheet.addRow({ id: projectReport.id, inprogress: projectReport.InProgress, done: projectReport.Done, cancelled: projectReport.Cancelled, avgcostofodcproject: projectReport.AVGCostOfODCProject, avgcostofpbproject: projectReport.AVGCostOfPBProject, percentmemofproject: projectReport.PercentMemOfProject });
 
         let File = await new Promise((resolve, reject) => {
             tmp.file({ discardDescriptor: true, prefix: `ReportSheet`, postfix: '.xlsx', mode: parseInt('0600', 8) }, async (err, file) => {

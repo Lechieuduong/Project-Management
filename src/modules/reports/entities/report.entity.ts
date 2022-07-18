@@ -20,7 +20,10 @@ export class ProjectReportEntity extends BaseEntity {
     PercentMemOfProject: number;
 
     @Column({ nullable: true })
-    AVGCost: number;
+    AVGCostOfODCProject: number;
+
+    @Column({ nullable: true })
+    AVGCostOfPBProject: number;
 
     @ManyToOne((_type) => ProjectEntity, (project) => project.report)
     project: ProjectEntity;
