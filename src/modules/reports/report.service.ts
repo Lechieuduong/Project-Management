@@ -13,6 +13,7 @@ import { TaskReportRepository } from './repository/task-report.repository';
 import * as tmp from 'tmp';
 import { TaskEntity } from '../tasks/entity/task.entity';
 import { ProjectEntity } from '../projects/entity/project.entity';
+import { UserEntity } from '../users/entity/user.entity';
 
 
 @Injectable()
@@ -34,7 +35,7 @@ export class ReportService {
         private readonly taskReportRepository: TaskReportRepository,
     ) { }
 
-    async createReportForProject(createProjectReportDto: CreateProjectReportDto) {
+    async createReportForProject(createProjectReportDto: CreateProjectReportDto, user: UserEntity) {
 
         const inProgressProject = await this.projectRepository.count({ status: ProjectStatus.IN_PROGRESS });
 
@@ -65,7 +66,7 @@ export class ReportService {
 
         const AVGODC = sumOfODC.sum - (memberOfODC * 50) - (sumOfODC.sum / 50);
 
-        const AVGPB = sumOfPB.sum - (memberOfPB * 50) - (sumOfPB.sum / 60) * 4;
+        const AVGPB = sumOfPB.sum - (memberOfPB * 50) - (sumOfPB.sum / 60);
 
         const report = this.projectReportRepository.create({
             InProgress: inProgressProject,
@@ -73,12 +74,13 @@ export class ReportService {
             Cancelled: cancelledProject,
             PercentMemOfProject: percent,
             AVGCostOfODCProject: AVGODC,
-            AVGCostOfPBProject: AVGPB
+            AVGCostOfPBProject: AVGPB,
+            user
         })
 
         await this.projectReportRepository.save(report);
 
-        return apiResponse(HttpStatus.OK, 'Create Report successful', { report })
+        return apiResponse(HttpStatus.OK, 'Create Report successful', {})
     }
 
     async createReportForTask(project_id: string) {
@@ -136,8 +138,9 @@ export class ReportService {
             { header: 'AVGCost Of ODC Project', key: 'avgcostofodcproject', width: 50 },
             { header: 'AVGCost Of PB Project', key: 'avgcostofpbproject', width: 50 },
             { header: 'PercentMemOfProject', key: 'percentmemofproject', width: 10 },
+            { header: 'Created by', key: 'createdby', width: 30 }
         ]
-        sheet.addRow({ id: projectReport.id, inprogress: projectReport.InProgress, done: projectReport.Done, cancelled: projectReport.Cancelled, avgcostofodcproject: projectReport.AVGCostOfODCProject, avgcostofpbproject: projectReport.AVGCostOfPBProject, percentmemofproject: projectReport.PercentMemOfProject });
+        sheet.addRow({ id: projectReport.id, inprogress: projectReport.InProgress, done: projectReport.Done, cancelled: projectReport.Cancelled, avgcostofodcproject: projectReport.AVGCostOfODCProject, avgcostofpbproject: projectReport.AVGCostOfPBProject, percentmemofproject: projectReport.PercentMemOfProject, createdby: projectReport.user.name });
 
         let File = await new Promise((resolve, reject) => {
             tmp.file({ discardDescriptor: true, prefix: `ReportSheet`, postfix: '.xlsx', mode: parseInt('0600', 8) }, async (err, file) => {

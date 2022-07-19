@@ -19,15 +19,15 @@ export class ProjectReportEntity extends BaseEntity {
     @Column({ type: 'float' })
     PercentMemOfProject: number;
 
-    @Column({ nullable: true })
+    @Column({ nullable: true, type: 'float' })
     AVGCostOfODCProject: number;
 
-    @Column({ nullable: true })
+    @Column({ nullable: true, type: 'float' })
     AVGCostOfPBProject: number;
 
     @ManyToOne((_type) => ProjectEntity, (project) => project.report)
     project: ProjectEntity;
 
-    @ManyToOne((_type) => UserEntity, (user) => user.report)
+    @ManyToOne((_type) => UserEntity, (user) => user.report, { eager: true })
     user: UserEntity;
 }
