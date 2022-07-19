@@ -217,7 +217,7 @@ export class TasksService {
         const checkTask = await this.tasksRepository.findOne(id);
         if (checkTask.type === TaskType.SUBTASK) {
             if (!checkTask) {
-                return apiResponse(404, 'Sub Task is not found');
+                throw new NotFoundException('Sub Task is not found');
             }
 
             if (file) {
@@ -243,7 +243,7 @@ export class TasksService {
 
             return apiResponse(HttpStatus.OK, 'Update Sub-Task Successful', checkTask);
         } else {
-            throw new BadRequestException();
+            throw new BadRequestException('This is not subtask');
         }
     }
 }

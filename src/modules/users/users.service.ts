@@ -112,7 +112,7 @@ export class UsersService {
             throw new BadRequestException('Something wrong. please check again!');
 
         if (user.verified)
-            throw new BadRequestException('User verified.');
+            throw new BadRequestException('User has been verified.');
 
         if (user.verify_code !== verify_code && verify_code !== null)
             throw new BadRequestException('Bad verify code');
@@ -134,13 +134,13 @@ export class UsersService {
         const user = await this.userRepository.findOne({ email });
 
         if (!user)
-            throw new NotFoundException('User not exists.');
+            throw new NotFoundException('User is not exists.');
 
         if (user.verify_code !== verify_code && verify_code !== null)
             throw new BadRequestException('Bad verify code');
 
         if (password !== repeat_password) {
-            return apiResponse(HttpStatus.BAD_REQUEST, 'Bad Request');
+            throw new BadRequestException('Repeat password is not corrected');
         }
 
         const salt = await bcrypt.genSalt();
@@ -174,7 +174,7 @@ export class UsersService {
 
         user.verify_code = uuid();
 
-        const url = process.env.DOMAIN + '/users/forgot_password?email=' + email + '&verify_code=' + user.verify_code;
+        const url = process.env.DOMAIN + '/users/forgot-password?email=' + email + '&verify_code=' + user.verify_code;
 
         const res = await this.sendMailService.sendMailForgotPassword(url, email);
 
