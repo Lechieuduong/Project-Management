@@ -20,7 +20,7 @@ export class ReportController {
     ) { }
 
     //Project Report
-    @Post('/create_project_report')
+    @Post('/create-project-report')
     @ApiBearerAuth()
     @UseGuards(AuthGuard(), RolesGuard)
     @Roles(UsersRole.ADMIN, UsersRole.SUPERADMIN)
@@ -31,24 +31,24 @@ export class ReportController {
         return this.reportService.createReportForProject(createProjectReportDto, user);
     }
 
-    @Get('/get_all_project_report')
+    @Get('/get-all-project-report')
     getAllProjectReports() {
         return this.reportService.getProjectReport();
     }
 
-    @Get('/get_one_project_report/:id')
+    @Get('/get-one-project-report/:id')
     getProjectReportByID(@Param('id') id: string): Promise<ProjectReportEntity> {
         return this.reportService.getProjectReportById(id);
     }
 
-    @Delete('delete_project_report/:id')
+    @Delete('delete-project-report/:id')
     deleteProjectReport(
         @Param('id') id: string
     ) {
         return this.reportService.deleteProjectReport(id);
     }
 
-    @Get('/download_project_report/:id')
+    @Get('/download-project-report/:id')
     @Header('Content-Type', 'text/xlsx')
     async exportProjectReport(
         @Res() res: Response,
@@ -59,7 +59,7 @@ export class ReportController {
     }
 
     //Task Report
-    @Post('create_task_report/:id')
+    @Post('create-task-report/:id')
     @ApiBearerAuth()
     @UseGuards(AuthGuard(), RolesGuard)
     @Roles(UsersRole.ADMIN, UsersRole.SUPERADMIN)
@@ -69,7 +69,7 @@ export class ReportController {
         return this.reportService.createReportForTask(project_id);
     }
 
-    @Get('/get_all_task_report')
+    @Get('/get-all-task-report')
     getAllTaskReports() {
         return this.reportService.getTaskReport();
     }
@@ -79,7 +79,7 @@ export class ReportController {
         return this.reportService.getTaskReportById(id);
     }
 
-    @Delete('delete_task_report/:id')
+    @Delete('delete-task-report/:id')
     deleteTaskeport(
         @Param('id') id: string
     ) {
@@ -87,7 +87,7 @@ export class ReportController {
     }
 
 
-    @Get('/download_task_report/:id')
+    @Get('/download-task-report/:id')
     @Header('Content-Type', 'text/xlsx')
     async exportTaskReport(
         @Res() res: Response,

@@ -19,7 +19,7 @@ import { UsersService } from './users.service';
 export class UsersController {
     constructor(private userService: UsersService) { }
 
-    @Get('/get_one_user/:id')
+    @Get('/get-one-user/:id')
     getUserById(
         @Param('id') id: string
     ) {
@@ -41,24 +41,24 @@ export class UsersController {
         return this.userService.sendMailVerifyUser(email);
     }
 
-    @Post('/forgot_password')
+    @Post('/forgot-password')
     sendMailForgotPassword(@Query('email') email: string) {
         return this.userService.sendMailForgotPassword(email);
     }
 
-    @Patch('/forgot_password')
+    @Patch('/forgot-password')
     forgotPassword(@Body() forgotPasswordDto: ForgotPasswordDto) {
         return this.userService.forgotAndChangePassword(forgotPasswordDto);
     }
 
-    @Post('/change_password')
+    @Post('/change-password')
     @ApiBearerAuth()
     @UseGuards(AuthGuard())
     sendMailChangePassword(@Query('email') email: string) {
         return this.userService.sendMailChangePassword(email);
     }
 
-    @Patch('/change_password')
+    @Patch('/change-password')
     @ApiBearerAuth()
     @UseGuards(AuthGuard())
     changePassword(
@@ -68,21 +68,8 @@ export class UsersController {
         return this.userService.changePassword(changePasswordDto, user);
     }
 
-    @Patch('/update_profile')
+    @Patch('/update-profile')
     @ApiConsumes('multipart/form-data')
-    // @ApiBody({
-    //     schema: {
-    //         type: 'object',
-    //         properties: {
-    //             comment: { type: 'string' },
-    //             outletId: { type: 'integer' },
-    //             file: {
-    //                 type: 'string',
-    //                 format: 'binary',
-    //             },
-    //         },
-    //     },
-    // })
     @ApiBearerAuth()
     @UseGuards(AuthGuard())
     @UseInterceptors(
@@ -105,7 +92,7 @@ export class UsersController {
         return this.userService.changeProfile(changeProfileDto, user, file);
     }
 
-    @Patch('/change_role')
+    @Patch('/change-role')
     @ApiBearerAuth()
     @UseGuards(AuthGuard())
     @HttpCode(200)

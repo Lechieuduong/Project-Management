@@ -6,6 +6,7 @@ import { Roles } from 'src/auth/decorators/role.decorator';
 import { RolesGuard } from 'src/auth/guards/roles.guard';
 import { UserEntity } from '../users/entity/user.entity';
 import { UsersRole } from '../users/users.constants';
+import { AddMemberDto } from './dto/add_member.dto';
 import { ChangeProjectStatusDto } from './dto/change-project-status.dto';
 import { CreateProjectDto } from './dto/create-project.dto';
 import { UpdateProjectDto } from './dto/update-project.dto';
@@ -19,7 +20,7 @@ import { ProjectsService } from './projects.service';
 export class ProjectsController {
     constructor(private readonly projectsService: ProjectsService) { }
 
-    @Post('/create_project')
+    @Post('/create-project')
     @Roles(UsersRole.ADMIN, UsersRole.SUPERADMIN)
     createProject(
         @Body() createProjectDto: CreateProjectDto,
@@ -28,17 +29,17 @@ export class ProjectsController {
         return this.projectsService.createProject(createProjectDto, user)
     }
 
-    @Get('/get_all_projects')
+    @Get('/get-all-projects')
     getAllProjects() {
         return this.projectsService.getAllProjects();
     }
 
-    @Get('/get_one_project/:id')
+    @Get('/get-one-project/:id')
     getProjectById(@Param('id') id: string): Promise<ProjectEntity> {
         return this.projectsService.getProjectById(id);
     }
 
-    @Patch('/update_project/:id')
+    @Patch('/update-project/:id')
     @UseGuards(RolesGuard)
     @ApiBearerAuth()
     @Roles(UsersRole.ADMIN, UsersRole.SUPERADMIN)
@@ -49,7 +50,7 @@ export class ProjectsController {
         return this.projectsService.updateProject(id, updateProjectDto);
     }
 
-    @Patch('/change_status_project/:id')
+    @Patch('/change-status-project/:id')
     @UseGuards(AuthGuard(), RolesGuard)
     @ApiBearerAuth()
     @Roles(UsersRole.ADMIN, UsersRole.SUPERADMIN)
@@ -60,7 +61,7 @@ export class ProjectsController {
         return this.projectsService.changeProjectStatus(changeStatusProjectDto, id)
     }
 
-    @Delete('delete_project/:id')
+    @Delete('delete-project/:id')
     @UseGuards(AuthGuard(), RolesGuard)
     @ApiBearerAuth()
     @Roles(UsersRole.ADMIN, UsersRole.SUPERADMIN)
@@ -70,18 +71,17 @@ export class ProjectsController {
         return this.projectsService.deleteProject(id);
     }
 
-    @Post('/add_member_into_project/:user_id&:project_id')
+    @Post('/add-member-into-project')
     @UseGuards(AuthGuard(), RolesGuard)
     @ApiBearerAuth()
     @Roles(UsersRole.ADMIN, UsersRole.SUPERADMIN)
     addMembersToProject(
-        @Param('user_id') user_id: string,
-        @Param('project_id') project_id: string
+        @Body() addMemberDto: AddMemberDto
     ) {
-        return this.projectsService.addMembersToProject(user_id, project_id)
+        return this.projectsService.addMembersToProject(addMemberDto)
     }
 
-    @Get('/get_project_infor')
+    @Get('/get-project-infor')
     getProjectInfor(
         @GetUser() user: UserEntity
     ) {
@@ -89,12 +89,12 @@ export class ProjectsController {
     }
 
 
-    @Delete('kick_user_from_project/:user_id')
+    @Delete('kick-user-from-project/:user-id')
     @UseGuards(AuthGuard(), RolesGuard)
     @ApiBearerAuth()
     @Roles(UsersRole.ADMIN, UsersRole.SUPERADMIN)
     kickUserFromProject(
-        @Param('user_id') user_id: string
+        @Param('user-id') user_id: string
     ) {
         return this.projectsService.kickUserFromProject(user_id);
     }

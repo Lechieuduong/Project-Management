@@ -1,7 +1,7 @@
 import { BadRequestException, ConflictException, forwardRef, HttpStatus, Inject, Injectable, InternalServerErrorException, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { apiResponse } from 'src/common/api-response/apiresponse';
-import { createQueryBuilder, Repository } from 'typeorm';
+import { createQueryBuilder, getConnection, Repository } from 'typeorm';
 import { CreateTaskDto } from './dto/create-task.dto';
 import { UpdateTaskDto } from './dto/update-task.dto';
 import { TaskEntity } from './entity/task.entity';
@@ -14,6 +14,7 @@ import { ProjectStatus } from '../projects/projects.constants';
 import { SendMailService } from 'src/common/send-mail/send-mail.service';
 import { ProjectsRepository } from '../projects/projects.repository';
 import { TasksRepository } from './tasks.repository';
+import { AssignUserDto } from './dto/assign-user.dto';
 
 @Injectable()
 export class TasksService {
@@ -52,7 +53,7 @@ export class TasksService {
 
         newTask.project_id = findProject;
 
-        await this.assignTaskForUser(user.id, newTask.id)
+        await this.assignTaskForUser({ user_id: user.id, task_id: newTask.id })
 
         this.tasksRepository.save(newTask);
 
@@ -132,25 +133,28 @@ export class TasksService {
         return apiResponse(HttpStatus.OK, 'Delete successful.', {});
     }
 
-    async assignTaskForUser(user_id: string, task_id: string) {
+    async assignTaskForUser(assignUserDto: AssignUserDto) {
+        const { user_id, task_id } = assignUserDto;
         const findUser = await this.userRepository.findOne(user_id);
         const findTask = await this.tasksRepository.findOne(task_id);
-        if (findTask.assignee_id.length >= 1) {
-            return apiResponse(HttpStatus.BAD_REQUEST, 'Only assign for 1 people', {});
-        } else {
-            const assignUser = this.projectInviteMember.create({
-                user_id: findUser,
-                task_id: findTask
-            })
 
-            this.projectInviteMember.save(assignUser);
-            findTask.assignee_id.push(assignUser);
+        if (findTask.assignee_id.length = 1) {
+            await getConnection()
+                .createQueryBuilder()
+                .update(ProjectInviteMember)
+                .set({ user_id: findUser })
+                .where('task_id = :id', { id: task_id })
+                .execute()
+
+            //findTask.assignee_id.push();
             if (findTask.status === ProjectStatus.BUG) {
                 this.sendMailAssignMemberIfTaskHasBug(findUser.email);
                 return apiResponse(HttpStatus.OK, 'Assign successful but this task has bug', {});
             } else {
                 return apiResponse(HttpStatus.OK, 'Assign successful', {});
             }
+        } else {
+            throw new BadRequestException('Only assign for 1 people')
         }
     }
 
@@ -170,7 +174,7 @@ export class TasksService {
             throw new BadRequestException(`Please wait ${(1 - getTimeSendMail) * 5 * 60}s`);
         }
 
-        const url = process.env.DOMAIN + 'tasks/task_has_bug?email=' + email;
+        const url = process.env.DOMAIN + '/tasks/task-has-bug?email=' + email;
         this.sendMailService.sendMailAssignMemberIfTaskHasBug(url, email)
 
         return apiResponse(HttpStatus.OK, 'Your task has a bug', {})
@@ -183,20 +187,25 @@ export class TasksService {
         id: string
     ) {
         const findTask = await this.tasksRepository.findOne({ id });
-        const { title } = createTaskDto;
-        const path = file.path;
-        const newSubTask = this.tasksRepository.create({
-            title,
-            image: path,
-            user,
-            type: TaskType.SUBTASK
-        });
+        if (this.projectInviteMember.findOne(user.id)) {
+            const { title } = createTaskDto;
+            const path = file.path;
+            const newSubTask = this.tasksRepository.create({
+                title,
+                image: path,
+                user,
+                type: TaskType.SUBTASK
+            });
 
-        newSubTask.taskParent = findTask;
+            newSubTask.taskParent = findTask;
 
-        await this.tasksRepository.save(newSubTask);
+            await this.tasksRepository.save(newSubTask);
 
-        return apiResponse(HttpStatus.CREATED, 'Create sub-task successful', {});
+            return apiResponse(HttpStatus.CREATED, 'Create sub-task successful', {});
+        } else {
+            throw new NotFoundException('User is not assigned in this task')
+        }
+
     }
 
 

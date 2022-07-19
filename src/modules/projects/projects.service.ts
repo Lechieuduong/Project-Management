@@ -4,6 +4,7 @@ import { apiResponse } from 'src/common/api-response/apiresponse';
 import { createQueryBuilder, getRepository, Repository } from 'typeorm';
 import { UserEntity } from '../users/entity/user.entity';
 import { UsersRepository } from '../users/users.repository';
+import { AddMemberDto } from './dto/add_member.dto';
 import { ChangeProjectStatusDto } from './dto/change-project-status.dto';
 import { CreateProjectDto } from './dto/create-project.dto';
 import { UpdateProjectDto } from './dto/update-project.dto';
@@ -28,7 +29,7 @@ export class ProjectsService {
     ) {
         const newProject = await this.projectsRepository.createProject(createProjectDto, user);
 
-        await this.addMembersToProject(user.id, newProject.id)
+        await this.addMembersToProject({ user_id: user.id, project_id: newProject.id })
 
         return apiResponse(HttpStatus.CREATED, 'Create project successful', { newProject })
     }
@@ -102,7 +103,8 @@ export class ProjectsService {
         return apiResponse(HttpStatus.OK, 'Delete successful', {});
     }
 
-    async addMembersToProject(user_id: string, project_id: string) {
+    async addMembersToProject(addMemberDto: AddMemberDto) {
+        const { user_id, project_id } = addMemberDto
         const findUser = await this.userRepository.findOne(user_id);
         const findProject = await this.projectsRepository.findOne(project_id);
 

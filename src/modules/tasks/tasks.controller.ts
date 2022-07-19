@@ -9,6 +9,7 @@ import { Roles } from 'src/auth/decorators/role.decorator';
 import { RolesGuard } from 'src/auth/guards/roles.guard';
 import { UserEntity } from '../users/entity/user.entity';
 import { UsersRole } from '../users/users.constants';
+import { AssignUserDto } from './dto/assign-user.dto';
 import { CreateTaskDto } from './dto/create-task.dto';
 import { UpdateTaskDto } from './dto/update-task.dto';
 import { TaskEntity } from './entity/task.entity';
@@ -21,7 +22,7 @@ import { TasksService } from './tasks.service';
 export class TasksController {
     constructor(private readonly taskService: TasksService) { }
 
-    @Post('/create_task/:id')
+    @Post('/create-task/:id')
     @ApiConsumes('multipart/form-data')
     @UseGuards(AuthGuard(), RolesGuard)
     @Roles(UsersRole.ADMIN, UsersRole.SUPERADMIN)
@@ -49,17 +50,17 @@ export class TasksController {
         return this.taskService.createTask(createTaskDto, file, user, id);
     }
 
-    @Get('/get_all_tasks')
+    @Get('/get-all-tasks')
     getAllTasks() {
         return this.taskService.getAllTasks();
     }
 
-    @Get('/get_one_task/:id')
+    @Get('/get-one-task/:id')
     getTaskById(@Param('id') id: string): Promise<TaskEntity> {
         return this.taskService.getTaskById(id);
     }
 
-    @Patch('/update_task/:id')
+    @Patch('/update-task/:id')
     @ApiConsumes('multipart/form-data')
     @UseGuards(AuthGuard(), RolesGuard)
     @Roles(UsersRole.ADMIN, UsersRole.SUPERADMIN)
@@ -93,17 +94,18 @@ export class TasksController {
         return this.taskService.deleteTask(id);
     }
 
-    @Post('/assign_user_into_task/:user_id&:task_id')
+
+
+    @Post('/assign-user-into_task/')
     @UseGuards(AuthGuard(), RolesGuard)
     @Roles(UsersRole.ADMIN, UsersRole.SUPERADMIN)
     assignTaskForUser(
-        @Param('user_id') user_id: string,
-        @Param('task_id') task_id: string,
+        @Body() assignUserDto: AssignUserDto
     ) {
-        return this.taskService.assignTaskForUser(user_id, task_id);
+        return this.taskService.assignTaskForUser(assignUserDto);
     }
 
-    @Post('/create_subtask/:id')
+    @Post('/create-subtask/:id')
     @ApiConsumes('multipart/form-data')
     @UseInterceptors(FileInterceptor('image',
         {
@@ -129,7 +131,7 @@ export class TasksController {
         return this.taskService.createSubTask(createTaskDto, file, user, id);
     }
 
-    @Patch('/update_subtask/:id')
+    @Patch('/update-subtask/:id')
     @ApiConsumes('multipart/form-data')
     @UseInterceptors(FileInterceptor('image',
         {
