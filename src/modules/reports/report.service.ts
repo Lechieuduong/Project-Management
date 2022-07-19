@@ -14,6 +14,8 @@ import * as tmp from 'tmp';
 import { TaskEntity } from '../tasks/entity/task.entity';
 import { ProjectEntity } from '../projects/entity/project.entity';
 import { UserEntity } from '../users/entity/user.entity';
+import { ProjectReportEntity } from './entities/report.entity';
+import { TaskReportEntity } from './entities/task-report';
 
 
 @Injectable()
@@ -35,6 +37,7 @@ export class ReportService {
         private readonly taskReportRepository: TaskReportRepository,
     ) { }
 
+    //Project Report
     async createReportForProject(createProjectReportDto: CreateProjectReportDto, user: UserEntity) {
 
         const inProgressProject = await this.projectRepository.count({ status: ProjectStatus.IN_PROGRESS });
@@ -83,6 +86,66 @@ export class ReportService {
         return apiResponse(HttpStatus.OK, 'Create Report successful', {})
     }
 
+    async getProjectReport() {
+        return this.projectReportRepository.find();
+    }
+
+    async getProjectReportById(id: string): Promise<ProjectReportEntity> {
+        const found = await this.projectReportRepository.findOne(id);
+
+        if (!found) {
+            throw new NotFoundException(`Project with ID: ${id} is not found`);
+        }
+
+        return found;
+    }
+
+    async deleteProjectReport(id: string) {
+        const result = await this.projectReportRepository.delete(id);
+
+        if (result.affected === 0) {
+            throw new NotFoundException(`Task with Id: ${id} is not found`);
+        }
+
+        return apiResponse(HttpStatus.OK, 'Delete successful.', {});
+    }
+
+    async exportProjectReport(projectReportID: string) {
+        const projectReport = await this.projectReportRepository.findOne(projectReportID);
+
+        let book = new Workbook();
+
+        let sheet = book.addWorksheet('sheet1')
+
+        sheet.columns = [
+            { header: 'ID', key: 'id', width: 50 },
+            { header: 'InProgress', key: 'inprogress', width: 10 },
+            { header: 'Done', key: 'done', width: 10 },
+            { header: 'Cancelled', key: 'cancelled', width: 10 },
+            { header: 'AVGCost Of ODC Project', key: 'avgcostofodcproject', width: 50 },
+            { header: 'AVGCost Of PB Project', key: 'avgcostofpbproject', width: 50 },
+            { header: 'PercentMemOfProject', key: 'percentmemofproject', width: 10 },
+            { header: 'Created by', key: 'createdby', width: 30 }
+        ]
+        sheet.addRow({ id: projectReport.id, inprogress: projectReport.InProgress, done: projectReport.Done, cancelled: projectReport.Cancelled, avgcostofodcproject: projectReport.AVGCostOfODCProject, avgcostofpbproject: projectReport.AVGCostOfPBProject, percentmemofproject: projectReport.PercentMemOfProject, createdby: projectReport.user.name });
+
+        let File = await new Promise((resolve, reject) => {
+            tmp.file({ discardDescriptor: true, prefix: `ReportSheet`, postfix: '.xlsx', mode: parseInt('0600', 8) }, async (err, file) => {
+                if (err)
+                    throw new BadRequestException(err);
+
+                book.xlsx.writeFile(file).then(_ => {
+                    resolve(file)
+                }).catch(err => {
+                    throw new BadRequestException(err)
+                })
+            })
+        })
+
+        return File;
+    }
+
+    //Task Report
     async createReportForTask(project_id: string) {
 
         const findProject = await this.projectRepository.findOne(project_id);
@@ -123,39 +186,28 @@ export class ReportService {
         }
     }
 
-    async exportProjectReport(projectReportID: string) {
-        const projectReport = await this.projectReportRepository.findOne(projectReportID);
+    async getTaskReport() {
+        return this.taskReportRepository.find();
+    }
 
-        let book = new Workbook();
+    async getTaskReportById(id: string): Promise<TaskReportEntity> {
+        const found = await this.taskReportRepository.findOne(id);
 
-        let sheet = book.addWorksheet('sheet1')
+        if (!found) {
+            throw new NotFoundException(`Project with ID: ${id} is not found`);
+        }
 
-        sheet.columns = [
-            { header: 'ID', key: 'id', width: 50 },
-            { header: 'InProgress', key: 'inprogress', width: 10 },
-            { header: 'Done', key: 'done', width: 10 },
-            { header: 'Cancelled', key: 'cancelled', width: 10 },
-            { header: 'AVGCost Of ODC Project', key: 'avgcostofodcproject', width: 50 },
-            { header: 'AVGCost Of PB Project', key: 'avgcostofpbproject', width: 50 },
-            { header: 'PercentMemOfProject', key: 'percentmemofproject', width: 10 },
-            { header: 'Created by', key: 'createdby', width: 30 }
-        ]
-        sheet.addRow({ id: projectReport.id, inprogress: projectReport.InProgress, done: projectReport.Done, cancelled: projectReport.Cancelled, avgcostofodcproject: projectReport.AVGCostOfODCProject, avgcostofpbproject: projectReport.AVGCostOfPBProject, percentmemofproject: projectReport.PercentMemOfProject, createdby: projectReport.user.name });
+        return found;
+    }
 
-        let File = await new Promise((resolve, reject) => {
-            tmp.file({ discardDescriptor: true, prefix: `ReportSheet`, postfix: '.xlsx', mode: parseInt('0600', 8) }, async (err, file) => {
-                if (err)
-                    throw new BadRequestException(err);
+    async deleteTaskReport(id: string) {
+        const result = await this.taskReportRepository.delete(id);
 
-                book.xlsx.writeFile(file).then(_ => {
-                    resolve(file)
-                }).catch(err => {
-                    throw new BadRequestException(err)
-                })
-            })
-        })
+        if (result.affected === 0) {
+            throw new NotFoundException(`Task with Id: ${id} is not found`);
+        }
 
-        return File;
+        return apiResponse(HttpStatus.OK, 'Delete successful.', {});
     }
 
     async exportTaskReport(taskReportID: string) {

@@ -199,4 +199,42 @@ export class TasksService {
         return apiResponse(HttpStatus.CREATED, 'Create sub-task successful', {});
     }
 
+
+    async updateSubTask(
+        id: string,
+        updateTaskDto: UpdateTaskDto,
+        file: Express.Multer.File,
+    ) {
+        const checkTask = await this.tasksRepository.findOne(id);
+        if (checkTask.type === TaskType.SUBTASK) {
+            if (!checkTask) {
+                return apiResponse(404, 'Sub Task is not found');
+            }
+
+            if (file) {
+                if (fs.existsSync(checkTask.image)) {
+                    fs.unlinkSync(`./${checkTask.image}`);
+                }
+                checkTask.image = file.path;
+            }
+
+            const { title, status, description, priority } = updateTaskDto;
+
+            checkTask.title = title;
+
+            checkTask.status = status;
+
+            checkTask.description = description;
+
+            checkTask.priority = priority;
+
+            //checkTask.attachments.push(files.toString());
+
+            await this.tasksRepository.save(checkTask);
+
+            return apiResponse(HttpStatus.OK, 'Update Sub-Task Successful', checkTask);
+        } else {
+            throw new BadRequestException();
+        }
+    }
 }
