@@ -39,16 +39,25 @@ export class ReportController {
         return this.reportService.createReportForProject(createProjectReportDto, user);
     }
 
+    @ApiBearerAuth()
+    @UseGuards(AuthGuard(), RolesGuard)
+    @Roles(UsersRole.ADMIN, UsersRole.SUPERADMIN)
     @Get('/get-all-project-report')
     getAllProjectReports() {
         return this.reportService.getProjectReport();
     }
 
+    @ApiBearerAuth()
+    @UseGuards(AuthGuard(), RolesGuard)
+    @Roles(UsersRole.ADMIN, UsersRole.SUPERADMIN)
     @Get('/get-one-project-report/:id')
     getProjectReportByID(@Param('id') id: string): Promise<ProjectReportEntity> {
         return this.reportService.getProjectReportById(id);
     }
 
+    @ApiBearerAuth()
+    @UseGuards(AuthGuard(), RolesGuard)
+    @Roles(UsersRole.ADMIN, UsersRole.SUPERADMIN)
     @Delete('delete-project-report/:id')
     deleteProjectReport(
         @Param('id') id: string
@@ -77,16 +86,25 @@ export class ReportController {
         return this.reportService.createReportForTask(project_id);
     }
 
+    @ApiBearerAuth()
+    @UseGuards(AuthGuard(), RolesGuard)
+    @Roles(UsersRole.ADMIN, UsersRole.SUPERADMIN)
     @Get('/get-all-task-report')
     getAllTaskReports() {
         return this.reportService.getTaskReport();
     }
 
+    @ApiBearerAuth()
+    @UseGuards(AuthGuard(), RolesGuard)
+    @Roles(UsersRole.ADMIN, UsersRole.SUPERADMIN)
     @Get('/get-one-task-report/:id')
     getTaskReportByID(@Param('id') id: string): Promise<TaskReportEntity> {
         return this.reportService.getTaskReportById(id);
     }
 
+    @ApiBearerAuth()
+    @UseGuards(AuthGuard(), RolesGuard)
+    @Roles(UsersRole.ADMIN, UsersRole.SUPERADMIN)
     @Delete('delete-task-report/:id')
     deleteTaskeport(
         @Param('id') id: string
