@@ -15,7 +15,13 @@ const passportModule = PassportModule.register({ defaultStrategy: 'jwt' });
 @Module({
   imports: [
     passportModule,
-    TypeOrmModule.forFeature([TaskEntity, UsersRepository, ProjectInviteMember, ProjectsRepository, TasksRepository])
+    TypeOrmModule.forFeature([
+      TaskEntity,
+      UsersRepository,
+      ProjectInviteMember,
+      ProjectsRepository,
+      TasksRepository
+    ])
   ],
   providers: [TasksService, RolesGuard],
   controllers: [TasksController],

@@ -1,9 +1,17 @@
-import { type } from "os";
+import {
+    BaseEntity,
+    Column,
+    CreateDateColumn,
+    DeleteDateColumn,
+    Entity, ManyToOne,
+    OneToMany,
+    PrimaryGeneratedColumn,
+    UpdateDateColumn
+} from "typeorm";
 import { ProjectInviteMember } from "src/modules/projects/entity/project-invite-member.entity";
 import { ProjectEntity } from "src/modules/projects/entity/project.entity";
 import { ProjectStatus } from "src/modules/projects/projects.constants";
 import { UserEntity } from "src/modules/users/entity/user.entity";
-import { BaseEntity, Column, CreateDateColumn, DeleteDateColumn, Entity, JoinColumn, JoinTable, ManyToMany, ManyToOne, OneToMany, OneToOne, PrimaryGeneratedColumn, UpdateDateColumn } from "typeorm";
 import { TaskPriority, TaskType } from "../tasks.constants";
 
 @Entity({ name: 'Task' })

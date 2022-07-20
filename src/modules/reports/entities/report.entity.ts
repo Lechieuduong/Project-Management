@@ -1,6 +1,12 @@
+import {
+    BaseEntity,
+    Column,
+    Entity,
+    ManyToOne,
+    PrimaryGeneratedColumn
+} from "typeorm";
 import { ProjectEntity } from "src/modules/projects/entity/project.entity";
 import { UserEntity } from "src/modules/users/entity/user.entity";
-import { BaseEntity, Column, Entity, ManyToOne, PrimaryGeneratedColumn } from "typeorm";
 
 @Entity({ name: 'Report' })
 export class ProjectReportEntity extends BaseEntity {

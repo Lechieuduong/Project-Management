@@ -1,4 +1,11 @@
-import { BadRequestException, ConflictException, forwardRef, HttpStatus, Inject, Injectable, InternalServerErrorException, NotFoundException } from '@nestjs/common';
+import {
+    BadRequestException,
+    forwardRef,
+    HttpStatus,
+    Inject,
+    Injectable,
+    NotFoundException
+} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { apiResponse } from 'src/common/api-response/apiresponse';
 import { createQueryBuilder, getConnection, Repository } from 'typeorm';
@@ -146,7 +153,6 @@ export class TasksService {
                 .where('task_id = :id', { id: task_id })
                 .execute()
 
-            //findTask.assignee_id.push();
             if (findTask.status === ProjectStatus.BUG) {
                 this.sendMailAssignMemberIfTaskHasBug(findUser.email);
                 return apiResponse(HttpStatus.OK, 'Assign successful but this task has bug', {});
@@ -205,9 +211,7 @@ export class TasksService {
         } else {
             throw new NotFoundException('User is not assigned in this task')
         }
-
     }
-
 
     async updateSubTask(
         id: string,

@@ -1,8 +1,13 @@
-import { BadRequestException, HttpStatus, Injectable, NotFoundException } from '@nestjs/common';
+import {
+    BadRequestException,
+    HttpStatus,
+    Injectable,
+    NotFoundException
+} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Workbook } from 'exceljs';
 import { apiResponse } from 'src/common/api-response/apiresponse';
-import { createQueryBuilder, Repository, SelectQueryBuilder } from 'typeorm';
+import { createQueryBuilder, Repository } from 'typeorm';
 import { ProjectInviteMember } from '../projects/entity/project-invite-member.entity';
 import { ProjectStatus, ProjectType } from '../projects/projects.constants';
 import { ProjectsRepository } from '../projects/projects.repository';
@@ -16,7 +21,6 @@ import { ProjectEntity } from '../projects/entity/project.entity';
 import { UserEntity } from '../users/entity/user.entity';
 import { ProjectReportEntity } from './entities/report.entity';
 import { TaskReportEntity } from './entities/task-report';
-
 
 @Injectable()
 export class ReportService {
@@ -141,7 +145,6 @@ export class ReportService {
                 })
             })
         })
-
         return File;
     }
 
@@ -165,7 +168,6 @@ export class ReportService {
             const bugTask = await createQueryBuilder(TaskEntity, 'Task')
                 .innerJoin(ProjectEntity, 'Project', 'Task.project_id = Project.id')
                 .where('Task.status = :status', { status: ProjectStatus.BUG }).getCount();
-
 
             const numOfTask = await this.taskRepository.count();
 
@@ -239,7 +241,6 @@ export class ReportService {
                 })
             })
         })
-
         return File;
     }
 }

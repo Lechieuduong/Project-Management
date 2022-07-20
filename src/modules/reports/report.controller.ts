@@ -1,4 +1,14 @@
-import { Body, Controller, Delete, Get, Header, Param, Post, Res, UseGuards } from '@nestjs/common';
+import {
+    Body,
+    Controller,
+    Delete,
+    Get,
+    Header,
+    Param,
+    Post,
+    Res,
+    UseGuards
+} from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 import { Response } from 'express';
@@ -15,9 +25,7 @@ import { ReportService } from './report.service';
 @ApiTags('Report')
 @Controller('reports')
 export class ReportController {
-    constructor(
-        private readonly reportService: ReportService,
-    ) { }
+    constructor(private readonly reportService: ReportService) { }
 
     //Project Report
     @Post('/create-project-report')
@@ -74,7 +82,7 @@ export class ReportController {
         return this.reportService.getTaskReport();
     }
 
-    @Get('/get_one_task_report/:id')
+    @Get('/get-one-task-report/:id')
     getTaskReportByID(@Param('id') id: string): Promise<TaskReportEntity> {
         return this.reportService.getTaskReportById(id);
     }
@@ -85,7 +93,6 @@ export class ReportController {
     ) {
         return this.reportService.deleteTaskReport(id);
     }
-
 
     @Get('/download-task-report/:id')
     @Header('Content-Type', 'text/xlsx')

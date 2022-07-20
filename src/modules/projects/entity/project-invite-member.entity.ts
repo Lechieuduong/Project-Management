@@ -1,6 +1,11 @@
+import {
+    BaseEntity,
+    Entity,
+    ManyToOne,
+    PrimaryGeneratedColumn
+} from "typeorm";
 import { TaskEntity } from "src/modules/tasks/entity/task.entity";
 import { UserEntity } from "src/modules/users/entity/user.entity";
-import { BaseEntity, Column, Entity, JoinColumn, ManyToOne, OneToOne, PrimaryGeneratedColumn } from "typeorm";
 import { ProjectEntity } from "./project.entity";
 
 @Entity({ name: 'Project_Member' })

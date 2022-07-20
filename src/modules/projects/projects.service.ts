@@ -1,7 +1,12 @@
-import { BadRequestException, ConflictException, HttpStatus, Injectable, InternalServerErrorException, NotFoundException } from '@nestjs/common';
+import {
+    BadRequestException,
+    HttpStatus,
+    Injectable,
+    NotFoundException
+} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { apiResponse } from 'src/common/api-response/apiresponse';
-import { createQueryBuilder, getRepository, Repository } from 'typeorm';
+import { createQueryBuilder, Repository } from 'typeorm';
 import { UserEntity } from '../users/entity/user.entity';
 import { UsersRepository } from '../users/users.repository';
 import { AddMemberDto } from './dto/add_member.dto';

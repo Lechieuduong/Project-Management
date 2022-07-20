@@ -1,5 +1,11 @@
+import {
+    BaseEntity,
+    Column,
+    Entity,
+    ManyToOne,
+    PrimaryGeneratedColumn
+} from "typeorm";
 import { TaskEntity } from "src/modules/tasks/entity/task.entity";
-import { BaseEntity, Column, Entity, ManyToOne, PrimaryGeneratedColumn } from "typeorm";
 
 @Entity({ name: 'Task_Report' })
 export class TaskReportEntity extends BaseEntity {

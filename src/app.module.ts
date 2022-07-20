@@ -26,7 +26,13 @@ import { ReportModule } from './modules/reports/report.module';
       autoLoadEntities: true,
       synchronize: true
     }),
-    UsersModule, CommonModule, AuthModule, ProjectsModule, TasksModule, ReportModule],
+    UsersModule,
+    CommonModule,
+    AuthModule,
+    ProjectsModule,
+    TasksModule,
+    ReportModule
+  ],
   providers: [
     {
       provide: APP_FILTER,

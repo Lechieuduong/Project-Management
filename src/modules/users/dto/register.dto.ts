@@ -1,13 +1,11 @@
 import { ApiProperty } from "@nestjs/swagger";
 import {
     IsEmail,
-    IsIn,
     IsNotEmpty,
     Matches,
     MaxLength,
     MinLength
 } from "class-validator";
-import { UsersRole } from "../users.constants";
 
 export class RegisterDto {
     @ApiProperty()
@@ -27,8 +25,4 @@ export class RegisterDto {
         message: 'Your password so weak !!!',
     })
     password: string;
-
-    // @IsNotEmpty()
-    // @IsIn([UsersRole.SUPERADMIN, UsersRole.ADMIN, UsersRole.USER])
-    // role: UsersRole;
 }

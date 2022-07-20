@@ -17,9 +17,7 @@ export class AuthService {
         private readonly jwtService: JwtService,
     ) { }
 
-    async signIn(
-        authCredentialsDto: AuthCreadentialsDto,
-    ): Promise<TokenResponseDto> {
+    async signIn(authCredentialsDto: AuthCreadentialsDto): Promise<TokenResponseDto> {
         const { email, password } = authCredentialsDto;
         const user = await this.usersService.getByEmail(email);
         const newUser = await this.userRepository.findOne({ email })

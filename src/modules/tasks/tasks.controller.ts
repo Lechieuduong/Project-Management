@@ -1,4 +1,15 @@
-import { Body, Controller, Delete, Get, Param, Patch, Post, Put, UploadedFile, UploadedFiles, UseGuards, UseInterceptors } from '@nestjs/common';
+import {
+    Body,
+    Controller,
+    Delete,
+    Get,
+    Param,
+    Patch,
+    Post,
+    UploadedFile,
+    UseGuards,
+    UseInterceptors
+} from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { ApiBearerAuth, ApiConsumes, ApiTags } from '@nestjs/swagger';
@@ -31,11 +42,9 @@ export class TasksController {
             storage: diskStorage({
                 destination: './upload/task-img',
                 filename: (req, file, cb) => {
-                    // Generating a 32 random chars long string
                     const randomName = Array(32)
                         .fill(null)
                         .map(() => Math.round(Math.random() * 16).toString(16)).join('');
-                    //Calling the callback passing the random name generated with the original extension name
                     cb(null, `${randomName}${extname(file.originalname)}`);
                 },
             }),
@@ -69,11 +78,9 @@ export class TasksController {
             storage: diskStorage({
                 destination: './upload/task-img',
                 filename: (req, file, cb) => {
-                    // Generating a 32 random chars long string
                     const randomName = Array(32)
                         .fill(null)
                         .map(() => Math.round(Math.random() * 16).toString(16)).join('');
-                    //Calling the callback passing the random name generated with the original extension name
                     cb(null, `${randomName}${extname(file.originalname)}`);
                 },
             }),
@@ -94,8 +101,6 @@ export class TasksController {
         return this.taskService.deleteTask(id);
     }
 
-
-
     @Post('/assign-user-into_task/')
     @UseGuards(AuthGuard(), RolesGuard)
     @Roles(UsersRole.ADMIN, UsersRole.SUPERADMIN)
@@ -112,11 +117,9 @@ export class TasksController {
             storage: diskStorage({
                 destination: './upload/task-img',
                 filename: (req, file, cb) => {
-                    // Generating a 32 random chars long string
                     const randomName = Array(32)
                         .fill(null)
                         .map(() => Math.round(Math.random() * 16).toString(16)).join('');
-                    //Calling the callback passing the random name generated with the original extension name
                     cb(null, `${randomName}${extname(file.originalname)}`);
                 },
             }),
@@ -138,11 +141,9 @@ export class TasksController {
             storage: diskStorage({
                 destination: './upload/task-img',
                 filename: (req, file, cb) => {
-                    // Generating a 32 random chars long string
                     const randomName = Array(32)
                         .fill(null)
                         .map(() => Math.round(Math.random() * 16).toString(16)).join('');
-                    //Calling the callback passing the random name generated with the original extension name
                     cb(null, `${randomName}${extname(file.originalname)}`);
                 },
             }),

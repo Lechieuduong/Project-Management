@@ -3,9 +3,7 @@ import { Injectable } from '@nestjs/common';
 
 @Injectable()
 export class SendMailService {
-    constructor(
-        private mailerService: MailerService
-    ) { }
+    constructor(private mailerService: MailerService) { }
 
     async sendMailVerify(url: string, email: string) {
         try {

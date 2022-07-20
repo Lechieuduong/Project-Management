@@ -12,6 +12,6 @@ export enum ProjectStatus {
 }
 
 export enum ProjectType {
-    ODC = 'ODC', // Offshore Development Centre
-    PB = 'PB' // Project-Based Contract
+    ODC = 'ODC',
+    PB = 'PB'
 }
