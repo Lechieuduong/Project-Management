@@ -5,6 +5,7 @@ import { ApiBearerAuth, ApiBody, ApiConsumes, ApiTags } from '@nestjs/swagger';
 import { diskStorage } from 'multer';
 import { extname } from 'path';
 import { GetUser } from 'src/auth/decorators/get-user.decorator';
+import { RolesGuard } from 'src/auth/guards/roles.guard';
 import { ChangePasswordDto } from './dto/change-password.dto';
 import { ChangeProfileDto } from './dto/change-profile.dto';
 import { ChangeRoleDto } from './dto/change-role.dto';
@@ -94,7 +95,7 @@ export class UsersController {
 
     @Patch('/change-role')
     @ApiBearerAuth()
-    @UseGuards(AuthGuard())
+    @UseGuards(AuthGuard(), RolesGuard)
     @HttpCode(200)
     changeRoleUser(@Body() changeRoleDto: ChangeRoleDto) {
         return this.userService.changeRoleUSer(changeRoleDto)
