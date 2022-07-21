@@ -6,6 +6,7 @@ import {
     Param,
     Patch,
     Post,
+    Query,
     UploadedFile,
     UploadedFiles,
     UseGuards,
@@ -34,7 +35,7 @@ import { TasksService } from './tasks.service';
 export class TasksController {
     constructor(private readonly taskService: TasksService) { }
 
-    @Post('/create-task/:id')
+    @Post('/create-task')
     @ApiConsumes('multipart/form-data')
     @UseGuards(AuthGuard(), RolesGuard)
     @Roles(UsersRole.ADMIN, UsersRole.SUPERADMIN)
@@ -54,10 +55,9 @@ export class TasksController {
     createTask(
         @Body() createTaskDto: CreateTaskDto,
         @UploadedFile() file: Express.Multer.File,
-        @GetUser() user: UserEntity,
-        @Param('project-id') id: string
+        @GetUser() user: UserEntity
     ) {
-        return this.taskService.createTask(createTaskDto, file, user, id);
+        return this.taskService.createTask(createTaskDto, file, user);
     }
 
     @Get('/get-all-tasks')
@@ -103,10 +103,19 @@ export class TasksController {
         return this.taskService.deleteTask(id);
     }
 
-    @Patch('/assign-user-into-task')
+    @Post('/assign-user-into-task')
     @UseGuards(AuthGuard(), RolesGuard)
     @Roles(UsersRole.ADMIN, UsersRole.SUPERADMIN)
     assignTaskForUser(
+        @Body() assignUserDto: AssignUserDto
+    ) {
+        return this.taskService.assignTaskForUser(assignUserDto);
+    }
+
+    @Patch('/change-assign-user-into-task')
+    @UseGuards(AuthGuard(), RolesGuard)
+    @Roles(UsersRole.ADMIN, UsersRole.SUPERADMIN)
+    assignTaskForAnotherUser(
         @Body() assignUserDto: AssignUserDto
     ) {
         return this.taskService.assignTaskForOtherUser(assignUserDto);

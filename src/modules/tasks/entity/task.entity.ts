@@ -65,5 +65,5 @@ export class TaskEntity extends BaseEntity {
 
     @ManyToOne((_type) => ProjectEntity, (project) => project.tasks_id)
     project_id: ProjectEntity;
-
+    newTask: Promise<ProjectEntity>;
 }

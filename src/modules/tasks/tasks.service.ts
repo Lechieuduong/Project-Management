@@ -24,6 +24,7 @@ import { TasksRepository } from './tasks.repository';
 import { AssignUserDto } from './dto/assign-user.dto';
 import { CommonError, CommonSuccess } from 'src/common/constants/common.constants';
 import { UserMesssage } from '../users/users.constants';
+import { ProjectsService } from '../projects/projects.service';
 
 @Injectable()
 export class TasksService {
@@ -41,35 +42,46 @@ export class TasksService {
         private sendMailService: SendMailService,
 
         @InjectRepository(ProjectsRepository)
-        private readonly projectRepository: ProjectsRepository
+        private readonly projectRepository: ProjectsRepository,
+
     ) { }
 
     async createTask(
         createTaskDto: CreateTaskDto,
         file: Express.Multer.File,
-        user: UserEntity,
-        id: string
+        user: UserEntity
     ) {
-        const findProject = await this.projectRepository.findOne(id);
+        const { project_id, title, description } = createTaskDto;
+        const findProject = await this.projectRepository.findOne(project_id);
+        if (findProject) {
+            const path = file.path;
+            const newTask = this.tasksRepository.create({
+                title,
+                description,
+                image: path,
+                user,
+                project_id: findProject
+            });
+            delete newTask.user.project;
+            delete newTask.user.created_at;
+            delete newTask.user.inviteUSer_id;
+            delete newTask.user.password;
+            delete newTask.user.verified;
+            delete newTask.user.verify_code;
+            delete newTask.user.task_id;
+            delete newTask.user.report;
+            delete newTask.user.updated_at;
 
-        const { title, description } = createTaskDto;
-        const path = file.path;
-        const newTask = this.tasksRepository.create({
-            title,
-            description,
-            image: path,
-            user
-        });
+            //await this.assignTaskForUser({ user_id: user.id, task_id: newTask.id })
 
-        newTask.project_id = findProject;
+            await this.tasksRepository.save(newTask);
 
-        await this.assignTaskForUser({ user_id: user.id, task_id: newTask.id })
+            findProject.tasks_id.push(newTask);
 
-        this.tasksRepository.save(newTask);
-
-        findProject.tasks_id.push(newTask);
-
-        return apiResponse(HttpStatus.CREATED, CommonSuccess.CREATED_TASK_SUCCESS, { newTask });
+            return apiResponse(HttpStatus.CREATED, CommonSuccess.CREATED_TASK_SUCCESS, newTask);
+        } else {
+            throw new NotFoundException(CommonError.NOT_FOUND_PROJECT);
+        }
 
     }
 

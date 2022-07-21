@@ -18,6 +18,7 @@ import { Roles } from '../users/decorators/user-roles.decorator';
 import { UserEntity } from '../users/entity/user.entity';
 import { UsersRole } from '../users/users.constants';
 import { CreateProjectReportDto } from './dto/create-report.dto';
+import { CreateTaskReportDto } from './dto/create-task-report.dto';
 import { ProjectReportEntity } from './entities/report.entity';
 import { TaskReportEntity } from './entities/task-report';
 import { ReportService } from './report.service';
@@ -76,14 +77,14 @@ export class ReportController {
     }
 
     //Task Report
-    @Post('create-task-report/:id')
+    @Post('create-task-report')
     @ApiBearerAuth()
     @UseGuards(AuthGuard(), RolesGuard)
     @Roles(UsersRole.ADMIN, UsersRole.SUPERADMIN)
     createTaskReport(
-        @Param('project-id') project_id: string
+        @Body() createTaskReportDto: CreateTaskReportDto
     ) {
-        return this.reportService.createReportForTask(project_id);
+        return this.reportService.createReportForTask(createTaskReportDto);
     }
 
     @ApiBearerAuth()

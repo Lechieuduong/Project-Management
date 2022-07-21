@@ -21,6 +21,7 @@ import { ProjectEntity } from '../projects/entity/project.entity';
 import { UserEntity } from '../users/entity/user.entity';
 import { ProjectReportEntity } from './entities/report.entity';
 import { TaskReportEntity } from './entities/task-report';
+import { CreateTaskReportDto } from './dto/create-task-report.dto';
 
 @Injectable()
 export class ReportService {
@@ -160,7 +161,8 @@ export class ReportService {
     }
 
     //Task Report
-    async createReportForTask(project_id: string) {
+    async createReportForTask(createTaskReportDto: CreateTaskReportDto) {
+        const { project_id } = createTaskReportDto;
         const findProject = await this.projectRepository.findOne(project_id);
 
         const findProjectInTask = await this.taskRepository.findOne({ project_id: findProject });

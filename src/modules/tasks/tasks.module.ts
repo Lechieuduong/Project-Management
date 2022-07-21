@@ -9,6 +9,7 @@ import { PassportModule } from '@nestjs/passport';
 import { ProjectsRepository } from '../projects/projects.repository';
 import { TasksRepository } from './tasks.repository';
 import { RolesGuard } from 'src/auth/guards/roles.guard';
+import { ProjectsService } from '../projects/projects.service';
 
 const passportModule = PassportModule.register({ defaultStrategy: 'jwt' });
 
