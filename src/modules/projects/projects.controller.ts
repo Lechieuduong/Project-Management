@@ -98,7 +98,7 @@ export class ProjectsController {
     }
 
 
-    @Delete('/kick-user-from-project/:user_id&:project_id')
+    @Delete('/kick-user-from-project')
     @UseGuards(AuthGuard(), RolesGuard)
     @ApiBearerAuth()
     @Roles(UsersRole.ADMIN, UsersRole.SUPERADMIN)
