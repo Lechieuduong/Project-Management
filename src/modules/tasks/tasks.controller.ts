@@ -103,13 +103,13 @@ export class TasksController {
         return this.taskService.deleteTask(id);
     }
 
-    @Post('/assign-user-into-task/')
+    @Patch('/assign-user-into-task')
     @UseGuards(AuthGuard(), RolesGuard)
     @Roles(UsersRole.ADMIN, UsersRole.SUPERADMIN)
     assignTaskForUser(
         @Body() assignUserDto: AssignUserDto
     ) {
-        return this.taskService.assignTaskForUser(assignUserDto);
+        return this.taskService.assignTaskForOtherUser(assignUserDto);
     }
 
     @Post('/create-subtask/:id')

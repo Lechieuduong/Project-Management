@@ -143,8 +143,38 @@ export class TasksService {
 
     async assignTaskForUser(assignUserDto: AssignUserDto) {
         const { user_id, task_id } = assignUserDto;
-        const findUser = await this.userRepository.findOne(user_id);
-        const findTask = await this.tasksRepository.findOne(task_id);
+
+        const [findUser, findTask] = await Promise.all([
+            this.userRepository.findOne(user_id),
+            this.tasksRepository.findOne(task_id),
+        ])
+
+        if (findTask.assignee_id.length = 1) {
+            const newAssignee = this.projectInviteMember.create({
+                user_id: findUser,
+                task_id: findTask
+            })
+
+            await this.projectInviteMember.save(newAssignee);
+            findTask.assignee_id.push(newAssignee)
+
+            if (findTask.status === ProjectStatus.BUG) {
+                this.sendMailAssignMemberIfTaskHasBug(findUser.email);
+                return apiResponse(HttpStatus.OK, CommonSuccess.ASSIGN_USER_BUG, {});
+            } else {
+                return apiResponse(HttpStatus.OK, CommonSuccess.ASSIGN_USER, {});
+            }
+        } else {
+            throw new BadRequestException(CommonError.ONLY_ONE_USER)
+        }
+    }
+
+    async assignTaskForOtherUser(assignUserDto: AssignUserDto) {
+        const { user_id, task_id } = assignUserDto;
+        const [findUser, findTask] = await Promise.all([
+            this.userRepository.findOne(user_id),
+            this.tasksRepository.findOne(task_id),
+        ])
 
         if (findTask.assignee_id.length = 1) {
             await getConnection()
@@ -163,6 +193,16 @@ export class TasksService {
         } else {
             throw new BadRequestException(CommonError.ONLY_ONE_USER)
         }
+    }
+
+    async getReporterAndAssignee(task_id: string) {
+        const memberQuery = await createQueryBuilder(ProjectInviteMember, 'project_members')
+            .leftJoin('project_members.project_id', 'projects')
+            .leftJoinAndSelect('project_members.user_id', 'users')
+            .select(['users.id, users.name, users.email, users.avatar, users.role'])
+            .where('projects.id = :id', { id: task_id }).getRawMany()
+
+        return apiResponse(HttpStatus.OK, CommonSuccess.GET_ALL_MEMBERS, memberQuery)
     }
 
     async sendMailAssignMemberIfTaskHasBug(email: string) {
