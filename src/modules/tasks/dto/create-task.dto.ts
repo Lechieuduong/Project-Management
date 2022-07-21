@@ -6,6 +6,9 @@ export class CreateTaskDto {
     @IsNotEmpty()
     title: string;
 
+    @ApiProperty({ required: false })
+    description: string;
+
     @ApiProperty({ type: 'string', format: 'binary' })
     image?: Express.Multer.File;
 }

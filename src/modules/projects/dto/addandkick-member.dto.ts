@@ -1,7 +1,7 @@
 import { ApiProperty } from "@nestjs/swagger"
 import { IsNotEmpty } from "class-validator"
 
-export class AddMemberDto {
+export class AddAndKickMemberDto {
     @ApiProperty()
     @IsNotEmpty()
     user_id: string

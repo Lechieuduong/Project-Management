@@ -7,12 +7,13 @@ import {
     Patch,
     Post,
     UploadedFile,
+    UploadedFiles,
     UseGuards,
     UseInterceptors
 } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
-import { FileInterceptor } from '@nestjs/platform-express';
-import { ApiBearerAuth, ApiConsumes, ApiTags } from '@nestjs/swagger';
+import { AnyFilesInterceptor, FileInterceptor, FilesInterceptor } from '@nestjs/platform-express';
+import { ApiBearerAuth, ApiBody, ApiConsumes, ApiTags } from '@nestjs/swagger';
 import { diskStorage } from 'multer';
 import { extname } from 'path';
 import { GetUser } from 'src/auth/decorators/get-user.decorator';
@@ -90,6 +91,7 @@ export class TasksController {
         @Body() updateTaskDto: UpdateTaskDto,
         @Param('id') id: string,
         @UploadedFile() file: Express.Multer.File,
+        //@UploadedFiles() files: Array<Express.Multer.File>
     ) {
         return this.taskService.updateTask(id, updateTaskDto, file);
     }
@@ -101,7 +103,7 @@ export class TasksController {
         return this.taskService.deleteTask(id);
     }
 
-    @Post('/assign-user-into_task/')
+    @Post('/assign-user-into-task/')
     @UseGuards(AuthGuard(), RolesGuard)
     @Roles(UsersRole.ADMIN, UsersRole.SUPERADMIN)
     assignTaskForUser(
@@ -147,8 +149,8 @@ export class TasksController {
                     cb(null, `${randomName}${extname(file.originalname)}`);
                 },
             }),
-        })
-    )
+        }
+    ))
     updateSubTask(
         @Body() updateTaskDto: UpdateTaskDto,
         @Param('id') id: string,

@@ -15,7 +15,7 @@ import { Roles } from 'src/auth/decorators/role.decorator';
 import { RolesGuard } from 'src/auth/guards/roles.guard';
 import { UserEntity } from '../users/entity/user.entity';
 import { UsersRole } from '../users/users.constants';
-import { AddMemberDto } from './dto/add_member.dto';
+import { AddAndKickMemberDto } from './dto/addandkick-member.dto';
 import { ChangeProjectStatusDto } from './dto/change-project-status.dto';
 import { CreateProjectDto } from './dto/create-project.dto';
 import { UpdateProjectDto } from './dto/update-project.dto';
@@ -85,9 +85,9 @@ export class ProjectsController {
     @ApiBearerAuth()
     @Roles(UsersRole.ADMIN, UsersRole.SUPERADMIN)
     addMembersToProject(
-        @Body() addMemberDto: AddMemberDto
+        @Body() addAndKickMemberDto: AddAndKickMemberDto
     ) {
-        return this.projectsService.addMembersToProject(addMemberDto)
+        return this.projectsService.addMembersToProject(addAndKickMemberDto)
     }
 
     @Get('/get-project-infor')
@@ -98,13 +98,20 @@ export class ProjectsController {
     }
 
 
-    @Delete('kick-user-from-project/:user-id')
+    @Delete('/kick-user-from-project/:user_id&:project_id')
     @UseGuards(AuthGuard(), RolesGuard)
     @ApiBearerAuth()
     @Roles(UsersRole.ADMIN, UsersRole.SUPERADMIN)
     kickUserFromProject(
-        @Param('user-id') user_id: string
+        @Body() addAndKickMemberDto: AddAndKickMemberDto
     ) {
-        return this.projectsService.kickUserFromProject(user_id);
+        return this.projectsService.kickUserFromProject(addAndKickMemberDto);
+    }
+
+    @Get('/get-all-members-of-project/:id')
+    getAllMembersInProject(
+        @Param('id') id: string
+    ) {
+        return this.projectsService.getAllMembersInProject(id);
     }
 }

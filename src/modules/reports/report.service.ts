@@ -43,33 +43,35 @@ export class ReportService {
 
     //Project Report
     async createReportForProject(createProjectReportDto: CreateProjectReportDto, user: UserEntity) {
+        const queryMemberOfODC = createQueryBuilder(ProjectInviteMember, 'Project_Member')
+            .innerJoin(ProjectEntity, 'Project', 'Project_Member.project_id = Project.id')
+            .where('Project.type = :type', { type: ProjectType.ODC });
 
-        const inProgressProject = await this.projectRepository.count({ status: ProjectStatus.IN_PROGRESS });
+        const queryMemberOfPB = createQueryBuilder(ProjectInviteMember, 'Project_Member')
+            .innerJoin(ProjectEntity, 'Project', 'Project_Member.project_id = Project.id')
+            .where('Project.type = :type', { type: ProjectType.PB });
 
-        const doneProject = await this.projectRepository.count({ status: ProjectStatus.DONE });
+        const querySumOfODC = createQueryBuilder(ProjectEntity, 'Project')
+            .select('SUM(Project.costs)', '')
+            .where('Project.type = :type', { type: ProjectType.ODC });
 
-        const cancelledProject = await this.projectRepository.count({ status: ProjectStatus.CANCELLED })
+        const querySumOfPB = createQueryBuilder(ProjectEntity, 'Project')
+            .select('SUM(Project.costs)', '')
+            .where('Project.type = :type', { type: ProjectType.PB })
+
+        const [inProgressProject, doneProject, cancelledProject, memberOfODC, memberOfPB, sumOfODC, sumOfPB] = await Promise.all([
+            this.projectRepository.count({ status: ProjectStatus.IN_PROGRESS }),
+            this.projectRepository.count({ status: ProjectStatus.DONE }),
+            this.projectRepository.count({ status: ProjectStatus.CANCELLED }),
+            queryMemberOfODC.getCount(),
+            queryMemberOfPB.getCount(),
+            querySumOfODC.getRawOne(),
+            querySumOfPB.getRawOne()
+        ])
 
         const { numOfMember, totalMember } = createProjectReportDto;
 
         const percent = numOfMember / totalMember * 100;
-
-        const memberOfODC = await createQueryBuilder(ProjectInviteMember, 'Project_Member')
-            .innerJoin(ProjectEntity, 'Project', 'Project_Member.project_id = Project.id')
-            .where('Project.type = :type', { type: ProjectType.ODC }).getCount();
-
-        const memberOfPB = await createQueryBuilder(ProjectInviteMember, 'Project_Member')
-            .innerJoin(ProjectEntity, 'Project', 'Project_Member.project_id = Project.id')
-            .where('Project.type = :type', { type: ProjectType.PB }).getCount();
-
-        const sumOfODC = await createQueryBuilder(ProjectEntity, 'Project')
-            .select('SUM(Project.costs)', '')
-            .where('Project.type = :type', { type: ProjectType.ODC }).getRawOne()
-
-        const sumOfPB = await createQueryBuilder(ProjectEntity, 'Project')
-            .select('SUM(Project.costs)', '')
-            .where('Project.type = :type', { type: ProjectType.PB }).getRawOne()
-
 
         const AVGODC = sumOfODC.sum - (memberOfODC * 50) - (sumOfODC.sum / 50);
 
@@ -131,7 +133,16 @@ export class ReportService {
             { header: 'PercentMemOfProject', key: 'percentmemofproject', width: 10 },
             { header: 'Created by', key: 'createdby', width: 30 }
         ]
-        sheet.addRow({ id: projectReport.id, inprogress: projectReport.InProgress, done: projectReport.Done, cancelled: projectReport.Cancelled, avgcostofodcproject: projectReport.AVGCostOfODCProject, avgcostofpbproject: projectReport.AVGCostOfPBProject, percentmemofproject: projectReport.PercentMemOfProject, createdby: projectReport.user.name });
+        sheet.addRow({
+            id: projectReport.id,
+            inprogress: projectReport.InProgress,
+            done: projectReport.Done,
+            cancelled: projectReport.Cancelled,
+            avgcostofodcproject: projectReport.AVGCostOfODCProject,
+            avgcostofpbproject: projectReport.AVGCostOfPBProject,
+            percentmemofproject: projectReport.PercentMemOfProject,
+            createdby: projectReport.user.name
+        });
 
         let File = await new Promise((resolve, reject) => {
             tmp.file({ discardDescriptor: true, prefix: `ReportSheet`, postfix: '.xlsx', mode: parseInt('0600', 8) }, async (err, file) => {
@@ -150,26 +161,29 @@ export class ReportService {
 
     //Task Report
     async createReportForTask(project_id: string) {
-
         const findProject = await this.projectRepository.findOne(project_id);
 
         const findProjectInTask = await this.taskRepository.findOne({ project_id: findProject });
 
         if (findProjectInTask) {
-
-            const inProgressTask = await createQueryBuilder(TaskEntity, 'Task')
+            const queryInProgressTask = createQueryBuilder(TaskEntity, 'Task')
                 .innerJoin(ProjectEntity, 'Project', 'Task.project_id = Project.id')
-                .where('Task.status = :status', { status: ProjectStatus.IN_PROGRESS }).getCount();
+                .where('Task.status = :status', { status: ProjectStatus.IN_PROGRESS });
 
-            const doneTask = await createQueryBuilder(TaskEntity, 'Task')
+            const queryDoneTask = createQueryBuilder(TaskEntity, 'Task')
                 .innerJoin(ProjectEntity, 'Project', 'Task.project_id = Project.id')
-                .where('Task.status = :status', { status: ProjectStatus.DONE }).getCount();
+                .where('Task.status = :status', { status: ProjectStatus.DONE });
 
-            const bugTask = await createQueryBuilder(TaskEntity, 'Task')
+            const queryBugTask = createQueryBuilder(TaskEntity, 'Task')
                 .innerJoin(ProjectEntity, 'Project', 'Task.project_id = Project.id')
-                .where('Task.status = :status', { status: ProjectStatus.BUG }).getCount();
+                .where('Task.status = :status', { status: ProjectStatus.BUG });
 
-            const numOfTask = await this.taskRepository.count();
+            const [inProgressTask, doneTask, bugTask, numOfTask] = await Promise.all([
+                queryInProgressTask.getCount(),
+                queryDoneTask.getCount(),
+                queryBugTask.getCount(),
+                this.taskRepository.count()
+            ])
 
             const percent = bugTask / numOfTask * 100;
 
@@ -227,7 +241,13 @@ export class ReportService {
             { header: 'PercentOfBug', key: 'percentofbug', width: 30 },
         ]
 
-        sheet.addRow({ id: taskReport.id, inprogress: taskReport.InProgress, done: taskReport.Done, bug: taskReport.Bug, percentofbug: taskReport.PercentOfBug });
+        sheet.addRow({
+            id: taskReport.id,
+            inprogress: taskReport.InProgress,
+            done: taskReport.Done,
+            bug: taskReport.Bug,
+            percentofbug: taskReport.PercentOfBug
+        });
 
         let File = await new Promise((resolve, reject) => {
             tmp.file({ discardDescriptor: true, prefix: `ReportSheet`, postfix: '.xlsx', mode: parseInt('0600', 8) }, async (err, file) => {

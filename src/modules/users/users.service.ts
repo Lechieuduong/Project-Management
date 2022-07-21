@@ -285,7 +285,6 @@ export class UsersService {
         const { email, role } = changeRoleDto;
 
         const user = await this.userRepository.findOne({ email });
-
         if (!user)
             throw new NotFoundException(`User email: ${email} is not found.`);
 

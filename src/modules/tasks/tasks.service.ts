@@ -22,6 +22,8 @@ import { SendMailService } from 'src/common/send-mail/send-mail.service';
 import { ProjectsRepository } from '../projects/projects.repository';
 import { TasksRepository } from './tasks.repository';
 import { AssignUserDto } from './dto/assign-user.dto';
+import { CommonError, CommonSuccess } from 'src/common/constants/common.constants';
+import { UserMesssage } from '../users/users.constants';
 
 @Injectable()
 export class TasksService {
@@ -50,10 +52,11 @@ export class TasksService {
     ) {
         const findProject = await this.projectRepository.findOne(id);
 
-        const { title } = createTaskDto;
+        const { title, description } = createTaskDto;
         const path = file.path;
         const newTask = this.tasksRepository.create({
             title,
+            description,
             image: path,
             user
         });
@@ -66,7 +69,7 @@ export class TasksService {
 
         findProject.tasks_id.push(newTask);
 
-        return apiResponse(HttpStatus.CREATED, 'Create task successful', {});
+        return apiResponse(HttpStatus.CREATED, CommonSuccess.CREATED_TASK_SUCCESS, {});
 
     }
 
@@ -89,7 +92,7 @@ export class TasksService {
             .getOne();
 
         if (!found) {
-            throw new NotFoundException(`Task with ID: ${id} is not found`);
+            throw new NotFoundException(CommonError.NOT_FOUND_TASK);
         }
 
         return found
@@ -103,7 +106,7 @@ export class TasksService {
         const checkTask = await this.tasksRepository.findOne(id);
 
         if (!checkTask) {
-            return apiResponse(404, 'Task is not found');
+            throw new NotFoundException(CommonError.NOT_FOUND_TASK);
         }
 
         if (file) {
@@ -123,21 +126,19 @@ export class TasksService {
 
         checkTask.priority = priority;
 
-        //checkTask.attachments.push(files.toString());
-
         await this.tasksRepository.save(checkTask);
 
-        return apiResponse(HttpStatus.OK, 'Update Task Successful', checkTask);
+        return apiResponse(HttpStatus.OK, CommonSuccess.UPDATED_TASK_SUCCESS, checkTask);
     }
 
     async deleteTask(id: string) {
         const result = await this.tasksRepository.delete(id);
 
         if (result.affected === 0) {
-            throw new NotFoundException(`Task with Id: ${id} is not found`);
+            throw new NotFoundException(CommonError.NOT_FOUND_TASK);
         }
 
-        return apiResponse(HttpStatus.OK, 'Delete successful.', {});
+        return apiResponse(HttpStatus.OK, CommonSuccess.DELETE_TASK_SUCCESS, {});
     }
 
     async assignTaskForUser(assignUserDto: AssignUserDto) {
@@ -155,12 +156,12 @@ export class TasksService {
 
             if (findTask.status === ProjectStatus.BUG) {
                 this.sendMailAssignMemberIfTaskHasBug(findUser.email);
-                return apiResponse(HttpStatus.OK, 'Assign successful but this task has bug', {});
+                return apiResponse(HttpStatus.OK, CommonSuccess.ASSIGN_USER_BUG, {});
             } else {
-                return apiResponse(HttpStatus.OK, 'Assign successful', {});
+                return apiResponse(HttpStatus.OK, CommonSuccess.ASSIGN_USER, {});
             }
         } else {
-            throw new BadRequestException('Only assign for 1 people')
+            throw new BadRequestException(CommonError.ONLY_ONE_USER)
         }
     }
 
@@ -168,10 +169,10 @@ export class TasksService {
         const user = await this.userRepository.findOne({ email });
 
         if (!user)
-            throw new NotFoundException(`User have email: ${email} is not found`);
+            throw new NotFoundException(UserMesssage.NOT_FOUND_MAIL);
 
         if (!user.verified)
-            throw new BadRequestException('You have to register or verified your account');
+            throw new BadRequestException(CommonError.NOT_VERIFY_EMAIL);
 
         const time = new Date().getTime() - user.updated_at.getTime();
         const getTimeSendMail = time / (100 * 60 * 5);
@@ -183,7 +184,7 @@ export class TasksService {
         const url = process.env.DOMAIN + '/tasks/task-has-bug?email=' + email;
         this.sendMailService.sendMailAssignMemberIfTaskHasBug(url, email)
 
-        return apiResponse(HttpStatus.OK, 'Your task has a bug', {})
+        return apiResponse(HttpStatus.OK, CommonSuccess.TASK_HAS_BUG, {})
     }
 
     async createSubTask(
@@ -207,9 +208,9 @@ export class TasksService {
 
             await this.tasksRepository.save(newSubTask);
 
-            return apiResponse(HttpStatus.CREATED, 'Create sub-task successful', {});
+            return apiResponse(HttpStatus.CREATED, CommonSuccess.CREATED_SUBTASK_SUCCESS, {});
         } else {
-            throw new NotFoundException('User is not assigned in this task')
+            throw new NotFoundException(CommonError.NOT_FOUND_USER)
         }
     }
 
@@ -221,7 +222,7 @@ export class TasksService {
         const checkTask = await this.tasksRepository.findOne(id);
         if (checkTask.type === TaskType.SUBTASK) {
             if (!checkTask) {
-                throw new NotFoundException('Sub Task is not found');
+                throw new NotFoundException(CommonError.NOT_FOUND_SUBTASK);
             }
 
             if (file) {
@@ -241,13 +242,11 @@ export class TasksService {
 
             checkTask.priority = priority;
 
-            //checkTask.attachments.push(files.toString());
-
             await this.tasksRepository.save(checkTask);
 
-            return apiResponse(HttpStatus.OK, 'Update Sub-Task Successful', checkTask);
+            return apiResponse(HttpStatus.OK, CommonSuccess.UPDATED_SUBTASK_SUCCESS, checkTask);
         } else {
-            throw new BadRequestException('This is not subtask');
+            throw new BadRequestException(CommonError.NOT_SUBTASK);
         }
     }
 }

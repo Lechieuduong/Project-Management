@@ -8,7 +8,7 @@ import { TaskEntity } from "src/modules/tasks/entity/task.entity";
 import { UserEntity } from "src/modules/users/entity/user.entity";
 import { ProjectEntity } from "./project.entity";
 
-@Entity({ name: 'Project_Member' })
+@Entity({ name: 'project_members' })
 export class ProjectInviteMember extends BaseEntity {
     @PrimaryGeneratedColumn('uuid')
     id: string;

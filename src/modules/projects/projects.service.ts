@@ -4,12 +4,14 @@ import {
     Injectable,
     NotFoundException
 } from '@nestjs/common';
+import { ApiResponse } from '@nestjs/swagger';
 import { InjectRepository } from '@nestjs/typeorm';
 import { apiResponse } from 'src/common/api-response/apiresponse';
-import { createQueryBuilder, Repository } from 'typeorm';
+import { CommonError, CommonSuccess } from 'src/common/constants/common.constants';
+import { Connection, createQueryBuilder, getConnection, Repository } from 'typeorm';
 import { UserEntity } from '../users/entity/user.entity';
 import { UsersRepository } from '../users/users.repository';
-import { AddMemberDto } from './dto/add_member.dto';
+import { AddAndKickMemberDto } from './dto/addandkick-member.dto';
 import { ChangeProjectStatusDto } from './dto/change-project-status.dto';
 import { CreateProjectDto } from './dto/create-project.dto';
 import { UpdateProjectDto } from './dto/update-project.dto';
@@ -36,7 +38,9 @@ export class ProjectsService {
 
         await this.addMembersToProject({ user_id: user.id, project_id: newProject.id })
 
-        return apiResponse(HttpStatus.CREATED, 'Create project successful', { newProject })
+        delete newProject.user
+
+        return apiResponse(HttpStatus.CREATED, CommonSuccess.CREATED_PROJECT_SUCCESS, { newProject })
     }
 
     async getAllProjects() {
@@ -47,7 +51,7 @@ export class ProjectsService {
         const found = await this.projectsRepository.findOne(id);
 
         if (!found) {
-            throw new NotFoundException(`Project with ID: ${id} is not found`);
+            throw new NotFoundException(CommonError.NOT_FOUND_PROJECT);
         }
 
         return found;
@@ -60,7 +64,7 @@ export class ProjectsService {
         const checkProject = await this.projectsRepository.findOne(id);
 
         if (!checkProject)
-            throw new NotFoundException(`Project with Id: ${id} is not found.`);
+            throw new NotFoundException(CommonError.NOT_FOUND_PROJECT);
 
         const { projectName, projectCode, startDate, endDate, costs, type } = updateProjectDto;
 
@@ -78,7 +82,7 @@ export class ProjectsService {
 
         await this.projectsRepository.save(checkProject);
 
-        return apiResponse(HttpStatus.OK, 'Update project successfully', {});
+        return apiResponse(HttpStatus.OK, CommonSuccess.UPDATED_PROJECT_SUCCESS, {});
     }
 
     async changeProjectStatus(
@@ -89,68 +93,84 @@ export class ProjectsService {
         const checkProject = await this.projectsRepository.findOne(id);
 
         if (!checkProject)
-            throw new NotFoundException(`Project with Id: ${id} is not found.`);
+            throw new NotFoundException(CommonError.NOT_FOUND_PROJECT);
 
         checkProject.status = status;
 
         await this.projectsRepository.save(checkProject);
 
-        return apiResponse(HttpStatus.OK, 'Change status successfully', {});
+        return apiResponse(HttpStatus.OK, CommonSuccess.CHANGE_STATUS_PROJECT, {});
     }
 
     async deleteProject(id: string) {
         const result = await this.projectsRepository.delete(id);
 
         if (result.affected === 0) {
-            throw new NotFoundException(`Task with ID: ${id} is not found`);
+            throw new NotFoundException(CommonError.NOT_FOUND_PROJECT);
         }
 
-        return apiResponse(HttpStatus.OK, 'Delete successful', {});
+        return apiResponse(HttpStatus.OK, CommonSuccess.DELETE_PROJECT_SUCCESS, {});
     }
 
-    async addMembersToProject(addMemberDto: AddMemberDto) {
-        const { user_id, project_id } = addMemberDto
-        const findUser = await this.userRepository.findOne(user_id);
-        const findProject = await this.projectsRepository.findOne(project_id);
-
+    async addMembersToProject(addAndKickMemberDtoDto: AddAndKickMemberDto) {
+        const { user_id, project_id } = addAndKickMemberDtoDto
+        const [findUser, findProject] = await Promise.all([
+            this.userRepository.findOne(user_id),
+            this.projectsRepository.findOne(project_id),
+        ])
         const checkExist = await this.projectInviteMember.findOne({ user_id: findUser, project_id: findProject })
 
         if (checkExist) {
-            throw new BadRequestException('This member already exists.')
+            throw new BadRequestException(CommonError.EXISTS_MEMBER)
         }
         const inviteUser = this.projectInviteMember.create({
             user_id: findUser,
             project_id: findProject
         })
 
-        this.projectInviteMember.save(inviteUser);
+        await this.projectInviteMember.save(inviteUser);
 
         findProject.members_id.push(inviteUser);
 
-        return apiResponse(HttpStatus.OK, 'Add members successful', {});
+        return apiResponse(HttpStatus.OK, CommonSuccess.ADD_MEMBERS, {});
     }
 
-    async kickUserFromProject(user_id: string) {
+    async kickUserFromProject(addAndKickMemberDtoDto: AddAndKickMemberDto) {
+        const { user_id, project_id } = addAndKickMemberDtoDto
+        const [findUser, findProject] = await Promise.all([
+            this.userRepository.findOne(user_id),
+            this.projectsRepository.findOne(project_id),
+        ])
 
-        const checkExist = await this.projectInviteMember.findOne(user_id);
+        const checkExist = await this.projectInviteMember.findOne({ user_id: findUser, project_id: findProject })
 
         if (!checkExist) {
-            throw new BadRequestException('This member does not exists!');
+            throw new BadRequestException(CommonError.NOT_EXISTS_MEMBER);
         }
 
-        this.projectInviteMember.delete(user_id);
+        this.projectInviteMember.delete(checkExist);
 
-        return apiResponse(HttpStatus.OK, 'Kick member successful', {});
+        return apiResponse(HttpStatus.OK, CommonSuccess.KICK_MEMBERS, {});
     }
 
     async getProjectInfor(user: UserEntity) {
-        const projectQuery = createQueryBuilder(ProjectEntity, 'Project')
+        const projectQuery = await createQueryBuilder(ProjectEntity, 'Project')
             .leftJoinAndSelect('Project.members_id', 'Project_Member')
             .leftJoin('Project_Member.user_id', 'User')
             .leftJoinAndSelect('Project.tasks_id', 'Task')
-            .where('User.id = :id', { id: user.id })
+            .where('User.id = :id', { id: user.id }).getMany();
         delete user.password;
 
-        return await projectQuery.getMany();
+        return apiResponse(HttpStatus.OK, CommonSuccess.GET_INFORMATION, projectQuery)
+    }
+
+    async getAllMembersInProject(project_id: string) {
+        const memberQuery = await createQueryBuilder(ProjectInviteMember, 'project_members')
+            .leftJoin('project_members.project_id', 'projects')
+            .leftJoinAndSelect('project_members.user_id', 'users')
+            .select(['users.id, users.name, users.email, users.avatar, users.role'])
+            .where('projects.id = :id', { id: project_id }).getRawMany()
+
+        return apiResponse(HttpStatus.OK, CommonSuccess.GET_ALL_MEMBERS, memberQuery)
     }
 }

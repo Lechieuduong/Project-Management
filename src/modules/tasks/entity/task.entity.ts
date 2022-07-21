@@ -14,7 +14,7 @@ import { ProjectStatus } from "src/modules/projects/projects.constants";
 import { UserEntity } from "src/modules/users/entity/user.entity";
 import { TaskPriority, TaskType } from "../tasks.constants";
 
-@Entity({ name: 'Task' })
+@Entity({ name: 'tasks' })
 export class TaskEntity extends BaseEntity {
     @PrimaryGeneratedColumn('uuid')
     id: string;

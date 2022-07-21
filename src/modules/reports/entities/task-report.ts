@@ -1,13 +1,14 @@
 import {
     BaseEntity,
     Column,
+    CreateDateColumn,
     Entity,
     ManyToOne,
     PrimaryGeneratedColumn
 } from "typeorm";
 import { TaskEntity } from "src/modules/tasks/entity/task.entity";
 
-@Entity({ name: 'Task_Report' })
+@Entity({ name: 'task_reports' })
 export class TaskReportEntity extends BaseEntity {
     @PrimaryGeneratedColumn('uuid')
     id: string;
@@ -20,6 +21,9 @@ export class TaskReportEntity extends BaseEntity {
 
     @Column()
     Bug: number;
+
+    @CreateDateColumn({ default: new Date(), type: 'timestamp with time zone' })
+    created_at: Date;
 
     @Column({ type: 'float' })
     PercentOfBug: number;

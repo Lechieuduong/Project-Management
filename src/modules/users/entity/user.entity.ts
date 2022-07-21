@@ -16,7 +16,7 @@ import { ProjectInviteMember } from "src/modules/projects/entity/project-invite-
 import { TaskEntity } from "src/modules/tasks/entity/task.entity";
 import { ProjectReportEntity } from "src/modules/reports/entities/report.entity";
 
-@Entity({ name: 'User' })
+@Entity({ name: 'users' })
 export class UserEntity extends BaseEntity {
     @PrimaryGeneratedColumn('uuid')
     id: string;

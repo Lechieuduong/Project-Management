@@ -1,6 +1,7 @@
 import {
     BaseEntity,
     Column,
+    CreateDateColumn,
     Entity,
     ManyToOne,
     PrimaryGeneratedColumn
@@ -8,7 +9,7 @@ import {
 import { ProjectEntity } from "src/modules/projects/entity/project.entity";
 import { UserEntity } from "src/modules/users/entity/user.entity";
 
-@Entity({ name: 'Report' })
+@Entity({ name: 'project_reports' })
 export class ProjectReportEntity extends BaseEntity {
     @PrimaryGeneratedColumn('uuid')
     id: string;
@@ -30,6 +31,9 @@ export class ProjectReportEntity extends BaseEntity {
 
     @Column({ nullable: true, type: 'float' })
     AVGCostOfPBProject: number;
+
+    @CreateDateColumn({ default: new Date(), type: 'timestamp with time zone' })
+    created_at: Date;
 
     @ManyToOne((_type) => ProjectEntity, (project) => project.report)
     project: ProjectEntity;

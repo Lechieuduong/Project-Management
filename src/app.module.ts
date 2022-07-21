@@ -24,7 +24,8 @@ import { ReportModule } from './modules/reports/report.module';
       password: process.env.DATABASE_PASSWORD,
       database: process.env.DATABASE_NAME,
       autoLoadEntities: true,
-      synchronize: true
+      synchronize: true,
+      logging: false,
     }),
     UsersModule,
     CommonModule,
