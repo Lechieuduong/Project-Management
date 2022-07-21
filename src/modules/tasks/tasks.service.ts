@@ -69,7 +69,7 @@ export class TasksService {
 
         findProject.tasks_id.push(newTask);
 
-        return apiResponse(HttpStatus.CREATED, CommonSuccess.CREATED_TASK_SUCCESS, {});
+        return apiResponse(HttpStatus.CREATED, CommonSuccess.CREATED_TASK_SUCCESS, { newTask });
 
     }
 
