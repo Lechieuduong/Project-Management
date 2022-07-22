@@ -62,6 +62,7 @@ export class TasksService {
                 user,
                 project_id: findProject
             });
+
             delete newTask.user.project;
             delete newTask.user.created_at;
             delete newTask.user.inviteUSer_id;
@@ -71,8 +72,6 @@ export class TasksService {
             delete newTask.user.task_id;
             delete newTask.user.report;
             delete newTask.user.updated_at;
-
-            //await this.assignTaskForUser({ user_id: user.id, task_id: newTask.id })
 
             await this.tasksRepository.save(newTask);
 

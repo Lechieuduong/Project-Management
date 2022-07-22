@@ -38,7 +38,15 @@ export class ProjectsService {
 
         await this.addMembersToProject({ user_id: user.id, project_id: newProject.id })
 
-        delete newProject.user
+        delete newProject.user.project;
+        delete newProject.user.created_at;
+        delete newProject.user.inviteUSer_id;
+        delete newProject.user.password;
+        delete newProject.user.verified;
+        delete newProject.user.verify_code;
+        delete newProject.user.task_id;
+        delete newProject.user.report;
+        delete newProject.user.updated_at;
 
         return apiResponse(HttpStatus.CREATED, CommonSuccess.CREATED_PROJECT_SUCCESS, { newProject })
     }
